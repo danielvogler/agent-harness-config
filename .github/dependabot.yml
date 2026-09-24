@@ -1,0 +1,46 @@
+---
+# Monthly and grouped: about one pull request per ecosystem per month, so they
+# get read rather than waved through. Security updates are separate and still
+# arrive as soon as an advisory is published, whatever this file says.
+version: 2
+
+updates:
+  # Every action is pinned to a commit SHA. A SHA is safe from a moved tag and
+  # blind to a patched vulnerability, so something has to bring the new SHA to
+  # a pull request.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Hook repositories are pinned by `rev`, which rots for the same reason the
+  # action SHAs do. The ECC pin in upstream.json is deliberately not here: a
+  # bump is read by a person with `make bump`, never merged by a bot.
+  - package-ecosystem: pre-commit
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: chore
+    groups:
+      hooks:
+        patterns: ["*"]
+
+  # The test dependencies, pinned exactly in requirements-dev.txt. Nothing here
+  # is installed on a member's machine, so a week's cooldown is plenty.
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+    groups:
+      dev-dependencies:
+        patterns: ["*"]

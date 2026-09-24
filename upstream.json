@@ -1,0 +1,44 @@
+{
+  "$comment": "The upstream pin. This is the only place the ECC version is declared. Bumping it is a one-line change; see UPSTREAM.md for the review discipline.",
+  "version": 1,
+  "upstream": {
+    "name": "ECC",
+    "repo": "https://github.com/affaan-m/ECC.git",
+    "ref": "main",
+    "sha": "1ac07903ec993f89757b59912d7fb31a366953bd",
+    "pinnedOn": "2026-09-12",
+    "pinnedCommitDate": "2026-09-12",
+    "license": "MIT"
+  },
+  "sources": {
+    "$comment": "Where custom/ content came from. Recorded so a later move to a shared org is a one-line edit here, not a hunt through the repo.",
+    "custom-skills": {
+      "repo": "https://github.com/danielvogler/ai-skills-library.git",
+      "sha": "779b98c82326d85c806a74c70798d45eccdb5acd",
+      "vendoredOn": "2026-07-30",
+      "path": ".agents/skills",
+      "skillCount": 43,
+      "portNotes": "81 skills vendored by copy; 38 pruned on 2026-08-29 as off-domain (dbt, Terraform provider authoring, Packer/AWS/Azure, React Native, code-review fragments) \u2014 see CHANGELOG. 43 remain from this source, tracked in custom/skills/skills-lock.json. Canonical storage upstream is .agents/skills/ (the per-harness .claude/.codex/.gemini directories there are generated, not sources). custom/skills/ additionally holds custom-deep-research, which is ours, not from this source."
+    },
+    "custom-skills-academic": {
+      "repo": "https://github.com/K-Dense-AI/claude-scientific-writer.git",
+      "sha": "43aaecd6a24bb949b5c5c5b7e7105963e1abd53e",
+      "vendoredOn": "2026-07-30",
+      "path": "skills",
+      "license": "MIT",
+      "skillCount": 7,
+      "portNotes": "8 of 23 skills vendored by copy, 7 remaining (research-lookup pruned 2026-08-29: the most expensive description in the bundle at 1,138 chars, needs a paid Parallel/Perplexity key, and paper-search plus literature-review cover it), byte-identical, into custom/skills/ alongside the ai-skills-library set (same module, custom-skills). Taken: research-grants, scientific-writing, literature-review, peer-review, citation-management, scholar-evaluation, scientific-critical-thinking. Deliberately NOT taken: the clinical set (clinical-decision-support, clinical-reports, treatment-plans) and the presentation/marketing set (generate-image, infographics, market-research-reports, latex-posters, pptx-posters, scientific-slides, scientific-schematics, venue-templates, document-skills, markitdown, parallel-web, hypothesis-generation) \u2014 wrong domain for this group and pure per-session context cost. No name collisions with upstream ECC or the existing custom skills. Each carries Python helper scripts under scripts/; no hardcoded credentials found on audit.",
+      "notConsidered": {
+        "repo": "https://github.com/imbad0202/academic-research-skills",
+        "reason": "CC BY-NC 4.0, incompatible with redistributing under this repo's Apache-2.0, and ambiguous for a university that also does industry-funded contract research. Yields only 4 skills \u2014 its 40k stars are for the surrounding plugin, which this overlay does not install \u2014 and its deep-research collides with both upstream ECC's and our custom-deep-research. The K-Dense set above covers the same ground under MIT. Decided 2026-07-30."
+      }
+    },
+    "atlassian-agent": {
+      "repo": "https://github.com/danielvogler/atlassian_agent.git",
+      "sha": "cb9d01b17e8af2ce67d96945c2eb49aeb753c599",
+      "vendoredOn": "2026-08-29",
+      "license": "MIT",
+      "portNotes": "Not vendored. Referenced as an MCP server, run with `uvx --from git+<repo>@<sha> atlassian-agent-mcp` \u2014 the package declares that console script, so no clone is needed. Pinned to a SHA because it is not on PyPI and this repo never tracks a moving branch. Bump deliberately: change the sha here and the matching one in overlay/manifest-overlay.json, then re-run make mcp."
+    }
+  }
+}

@@ -1,0 +1,6 @@
+# For `make test` only. Installing the shared config needs none of this.
+# jsonschema is what validate-manifests.py validates upstream's manifests with; the
+# pre-commit hook installs it the same way.
+pytest==9.1.1
+pytest-cov==7.1.0
+jsonschema==4.26.0

@@ -1,0 +1,56 @@
+# --- Materialized upstream checkout ---
+# Created by `make install` from the SHA in upstream.json. Never committed:
+# the pin is the source of truth, not a copy of upstream's files.
+.ecc/
+
+# --- Node ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+*.tgz
+
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.ruff_cache/
+.pytest_cache/
+.coverage
+.mypy_cache/
+
+# --- Secrets / environment ---
+.env
+.env.*
+!.env.example
+
+# --- ECC installer state ---
+ecc-install-state.json
+.ecc-install-state.json
+
+# --- Deep-research output ---
+# Commands like /agent-frameworks write their corpus and reports into the working
+# directory. Large PDFs, per-run and not shared config — never committed.
+research/
+
+# --- Working notes ---
+# Our own in-progress thinking: session findings, TODOs, drafts. Written fast and often
+# wrong on purpose, so none of it is committed — a colleague should not be able to read a
+# rejected idea as team policy. Conclusions graduate into the tracked docs instead.
+notes/
+
+# --- Security test fixtures ---
+# shield-bait and friends are deliberately insecure throwaway repos for testing config
+# scanners. They contain fake but realistic-looking credentials. Ignored so they can never
+# be committed by accident — see notes/shield-bait-prompt.md. Delete them when done.
+shield-bait/
+*-bait/
+
+# --- OS / editor cruft ---
+.DS_Store
+Thumbs.db
+*.swp
+
+# INSTRUCTIONS.md is excluded via .git/info/exclude, not here.

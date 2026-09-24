@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="664" viewBox="0 0 860 664" role="img" aria-label="Output of make context: about 15,300 tokens of rules and skill descriptions are loaded at the start of every session, and the always-on rules are listed largest first">
+  <title>make context</title>
+  <!-- Real output of `make context`, first part only. The home path in the
+       first line is shown as ~ ; nothing else is edited. -->
+  <rect width="860" height="664" fill="#0E0E10"/>
+  <rect x="12" y="12" width="836" height="640" rx="12" fill="#161618" stroke="#2A2A2C" stroke-width="1"/>
+  <circle cx="36" cy="34" r="5" fill="#3A3A3E"/>
+  <circle cx="54" cy="34" r="5" fill="#3A3A3E"/>
+  <circle cx="72" cy="34" r="5" fill="#3A3A3E"/>
+  <text x="430.0" y="39" font-family="Inter, ui-sans-serif, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" text-anchor="middle" fill="#6F6F6B">agent-harness-config</text>
+  <rect x="12" y="52" width="836" height="1" fill="#2A2A2C"/>
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13.5">
+    <text x="36" y="76" fill="#FDFDFB" font-weight="700">$&#160;make&#160;context</text>
+    <text x="36" y="96" fill="#FDFDFB" font-weight="700">Context&#160;cost&#160;of&#160;the&#160;installed&#160;config&#160;&#160;(~/.claude)</text>
+    <text x="36" y="116" fill="#A3A39D"></text>
+    <text x="36" y="136" fill="#FDFDFB" font-weight="700">&#160;&#160;PAID&#160;EVERY&#160;SESSION&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;chars&#160;&#160;&#160;~tokens</text>
+    <text x="36" y="156" fill="#6F6F6B">&#160;&#160;------------------------&#160;---------&#160;&#160;--------</text>
+    <text x="36" y="176" fill="#A3A39D">&#160;&#160;rules&#160;(always-on)&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;22,677&#160;&#160;&#160;&#160;&#160;5,669</text>
+    <text x="36" y="196" fill="#A3A39D">&#160;&#160;skill&#160;descriptions&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;38,560&#160;&#160;&#160;&#160;&#160;9,640</text>
+    <text x="36" y="216" fill="#5FBFA6" font-weight="700">&#160;&#160;TOTAL&#160;AT&#160;STARTUP&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;61,237&#160;&#160;&#160;&#160;15,309</text>
+    <text x="36" y="236" fill="#A3A39D"></text>
+    <text x="36" y="256" fill="#FDFDFB" font-weight="700">&#160;&#160;LOADED&#160;ON&#160;DEMAND&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;chars&#160;&#160;&#160;~tokens</text>
+    <text x="36" y="276" fill="#6F6F6B">&#160;&#160;------------------------&#160;---------&#160;&#160;--------</text>
+    <text x="36" y="296" fill="#A3A39D">&#160;&#160;rules&#160;(path-scoped)&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;271,486&#160;&#160;&#160;&#160;67,871</text>
+    <text x="36" y="316" fill="#A3A39D">&#160;&#160;107&#160;skill&#160;bodies&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;—&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;—</text>
+    <text x="36" y="336" fill="#A3A39D"></text>
+    <text x="36" y="356" fill="#A3A39D">&#160;&#160;12&#160;always-on&#160;rule&#160;files,&#160;116&#160;path-scoped,&#160;107&#160;skills</text>
+    <text x="36" y="376" fill="#A3A39D"></text>
+    <text x="36" y="396" fill="#FDFDFB" font-weight="700">Always-on&#160;rules,&#160;largest&#160;first&#160;—&#160;this&#160;is&#160;where&#160;pruning&#160;pays:</text>
+    <text x="36" y="416" fill="#A3A39D">&#160;&#160;&#160;3,663&#160;chars&#160;&#160;~&#160;&#160;915&#160;tok&#160;&#160;ecc/common/code-review.md</text>
+    <text x="36" y="436" fill="#A3A39D">&#160;&#160;&#160;3,022&#160;chars&#160;&#160;~&#160;&#160;755&#160;tok&#160;&#160;ecc/common/coding-style.md</text>
+    <text x="36" y="456" fill="#A3A39D">&#160;&#160;&#160;2,596&#160;chars&#160;&#160;~&#160;&#160;649&#160;tok&#160;&#160;ecc/common/agents.md</text>
+    <text x="36" y="476" fill="#A3A39D">&#160;&#160;&#160;2,405&#160;chars&#160;&#160;~&#160;&#160;601&#160;tok&#160;&#160;ecc/custom/git.md</text>
+    <text x="36" y="496" fill="#A3A39D">&#160;&#160;&#160;2,252&#160;chars&#160;&#160;~&#160;&#160;563&#160;tok&#160;&#160;ecc/common/development-workflow.md</text>
+    <text x="36" y="516" fill="#A3A39D">&#160;&#160;&#160;2,203&#160;chars&#160;&#160;~&#160;&#160;550&#160;tok&#160;&#160;ecc/custom/gcp.md</text>
+    <text x="36" y="536" fill="#A3A39D">&#160;&#160;&#160;1,647&#160;chars&#160;&#160;~&#160;&#160;411&#160;tok&#160;&#160;ecc/common/performance.md</text>
+    <text x="36" y="556" fill="#A3A39D">&#160;&#160;&#160;1,400&#160;chars&#160;&#160;~&#160;&#160;350&#160;tok&#160;&#160;ecc/common/testing.md</text>
+    <text x="36" y="576" fill="#A3A39D"></text>
+    <text x="36" y="596" fill="#6F6F6B">&#160;&#160;A&#160;rule&#160;that&#160;is&#160;not&#160;needed&#160;in&#160;every&#160;session&#160;wants&#160;`paths:`&#160;frontmatter.</text>
+    <text x="36" y="616" fill="#6F6F6B">&#160;&#160;A&#160;rule&#160;that&#160;is&#160;documentation&#160;rather&#160;than&#160;instruction&#160;should&#160;not&#160;install&#160;at&#160;all.</text>
+  </g>
+</svg>

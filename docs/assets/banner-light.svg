@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-label="agent-harness-config — one agent config, installed into every coding harness">
+  <title>agent-harness-config</title>
+  <!-- The repo's one idea, drawn: a single install on the left of the fan,
+       five harnesses on the right, all reading the same skills, rules and
+       commands. -->
+  <rect width="1200" height="340" fill="#FDFDFB"/>
+  <rect y="339" width="1200" height="1" fill="#E5E4DE"/>
+
+  <g font-family="Inter, ui-sans-serif, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+    <circle cx="72" cy="74" r="4" fill="#1F6F5C"/>
+    <text x="88" y="79" font-size="14" font-weight="600" letter-spacing="2.2" fill="#6F6F6B">SHARED AGENT CONFIG &#183; FIVE HARNESSES</text>
+
+    <text x="70" y="172" font-size="62" letter-spacing="-2.6">
+      <tspan fill="#0E0E10" font-weight="700">agent-harness</tspan><tspan fill="#6F6F6B" font-weight="400">-config</tspan><tspan fill="#1F6F5C" font-weight="700">.</tspan>
+    </text>
+
+    <text x="72" y="232" font-size="25" fill="#6F6F6B">One agent config, installed into</text>
+    <text x="72" y="268" font-size="25" fill="#6F6F6B">every coding harness you use.</text>
+
+    <text x="72" y="312" font-size="14" fill="#A3A39D">Pinned upstream ECC plus the team's own skills, rules and commands. One make install.</text>
+  </g>
+
+  <!-- The fan-out. One command on the left, the five harnesses it writes into. -->
+  <g font-family="Inter, ui-sans-serif, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+    <text x="800" y="150" font-size="12" font-weight="600" letter-spacing="1.6" fill="#A3A39D">THIS REPO</text>
+    <rect x="800" y="163" width="152" height="44" rx="22" fill="#0E0E10"/>
+    <text x="876" y="190" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" font-weight="600" text-anchor="middle" fill="#FDFDFB">make install</text>
+    <text x="800" y="232" font-size="13" fill="#A3A39D">one command,</text>
+    <text x="800" y="250" font-size="13" fill="#A3A39D">five harnesses</text>
+  </g>
+  <g fill="none" stroke="#BFBEB7" stroke-width="1.6" stroke-linecap="round">
+    <path d="M 952 185 C 985 185, 975 95, 1004 95"/>
+    <path d="M 952 185 C 985 185, 975 140, 1004 140"/>
+    <path d="M 952 185 C 985 185, 975 185, 1004 185"/>
+    <path d="M 952 185 C 985 185, 975 230, 1004 230"/>
+    <path d="M 952 185 C 985 185, 975 275, 1004 275"/>
+  </g>
+  <g>
+    <circle cx="1010" cy="95" r="4.5" fill="#1F6F5C"/>
+    <circle cx="1010" cy="140" r="4.5" fill="#1F6F5C"/>
+    <circle cx="1010" cy="185" r="4.5" fill="#1F6F5C"/>
+    <circle cx="1010" cy="230" r="4.5" fill="#1F6F5C"/>
+    <circle cx="1010" cy="275" r="4.5" fill="#1F6F5C"/>
+  </g>
+  <g font-family="Inter, ui-sans-serif, -apple-system, Segoe UI, Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#0E0E10">
+    <text x="1026" y="100.5">Claude Code</text>
+    <text x="1026" y="145.5">Cursor</text>
+    <text x="1026" y="190.5">Codex</text>
+    <text x="1026" y="235.5">Antigravity</text>
+    <text x="1026" y="280.5">opencode</text>
+  </g>
+</svg>

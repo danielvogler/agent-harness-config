@@ -1,0 +1,128 @@
+name: CI
+
+# A bad pin or overlay breaks every member's install at once, and it breaks it
+# quietly — the installer just resolves fewer files and reports success. Locally
+# that is caught only if someone remembers `make validate`. Here it is caught
+# always.
+#
+# Four jobs, split by what they need:
+#   lint      — no clone, seconds, catches the common mistakes
+#   test      — no clone, unit tests for the scripts in tools/
+#   plan      — clones upstream at the pin and validates against its own schemas
+#   secrets   — gitleaks over the full history
+# lint or test failing tells you the problem is in this repo. plan failing but
+# both passing tells you the problem is the relationship to upstream.
+
+on:
+  pull_request:
+  # Every branch, not just main. A pin bump or an overlay change is usually wrong on a
+  # branch long before it reaches main, and waiting for the merge to find out defeats the
+  # point of the check.
+  push:
+  # The pin is a moving target even when we do not touch it: upstream can delete
+  # a module the overlay removes, which turns a green repo red without a commit.
+  # Weekly is enough to hear about it before someone's install does.
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+  # So a release can run exactly this gate rather than a copy of it that drifts.
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  # A branch with an open PR fires both push and pull_request. github.ref differs between
+  # them (refs/heads/x vs refs/pull/N/merge), so grouping on it ran everything twice.
+  # Normalising to the branch name puts both in one group, and the newer run cancels the
+  # older — one run per branch, whichever event triggered it.
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+# Every action is pinned to a commit, not a tag: a tag can be moved onto other code, and an
+# action runs with this workflow's token. The comment after each says which release the
+# commit is; Dependabot moves both together.
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Run pre-commit
+        uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
+
+      # validate-manifests runs inside pre-commit too, but only its no-network
+      # checks. Calling it directly keeps the failure legible when the hook
+      # environment is what broke rather than the manifests.
+      - name: Validate the pin and the overlay
+        run: make validate
+
+  # The scripts in tools/ run on every member's machine, and a bug in the overlay
+  # logic fails the same quiet way a bad overlay does. These tests fake upstream's
+  # tree and mock git, so they need no network and no .ecc/.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Install test dependencies
+        run: python3 -m pip install -r requirements-dev.txt
+
+      - name: Run the unit tests
+        run: make test
+
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '20'
+
+      # Materialize only. `make plan` would also run the installer's dry-run,
+      # which writes nothing but resolves against a runner home directory that
+      # looks nothing like a member's machine, so its output is not meaningful
+      # here. What matters is that the overlay still applies cleanly to the
+      # pinned upstream and that the result validates against upstream's schemas.
+      - name: Materialize upstream at the pin
+        run: python3 tools/materialize.py
+
+      - name: Validate the materialized manifests
+        run: make validate
+
+      # The pin plus the overlay is the whole design, so prove the profile still resolves
+      # to the module list we expect rather than to a silently shorter one.
+      - name: Check the custom profile still resolves
+        run: python3 tools/check-profile.py
+
+  # pre-commit's gitleaks hook checks the files as they are now. This checks every commit
+  # ever pushed: a credential committed once and reverted is still leaked.
+  secrets:
+    runs-on: ubuntu-latest
+    # On a pull request the action asks the API which commits the PR carries; without
+    # pull-requests: read that call fails with "Resource not accessible by integration".
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Scan the full history for secrets
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="ht hd">
+  <title id="ht">How agent-harness-config works</title>
+  <desc id="hd">What you get: skills (54 of the team's own plus ECC's), 7 rules of our own plus ECC's, ECC's commands plus our research command, agents from ECC, 2 guard hooks, and 5 MCP servers: context7, BigQuery, Miro, Jira with Confluence, and GitHub. make install puts skills, rules, commands, agents and hooks in place; make setup-user turns on the permissions and the two hooks; make mcp connects the MCP servers to Claude Code. Claude Code, Codex and opencode install into the home directory, Cursor and Antigravity per project. Skills reach all five harnesses; agents all but opencode; commands all but Codex; rules Claude Code, Cursor and Antigravity; hooks Claude Code, Cursor and opencode; MCP servers Claude Code. Everything is built from a pinned ECC commit plus this repo's overlay.</desc>
+  <rect width="1200" height="560" fill="#FDFDFB"/>
+  <rect y="559" width="1200" height="1" fill="#E5E4DE"/>
+  <g font-family="Inter, ui-sans-serif, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+    <circle cx="44" cy="48" r="4" fill="#1F6F5C"/>
+    <text x="60" y="53" font-size="13" font-weight="600" letter-spacing="2.2" fill="#6F6F6B">HOW IT WORKS</text>
+    <text x="40" y="104" font-size="36" font-weight="700" letter-spacing="-1.4" fill="#0E0E10">One install, every harness.</text>
+    <text x="40" y="152" font-size="10.5" font-weight="700" letter-spacing="1.4" fill="#6F6F6B">WHAT YOU GET</text>
+    <rect x="40" y="166" width="178" height="80" rx="12" fill="#FFFFFF" stroke="#E5E4DE" stroke-width="1"/>
+    <text x="56" y="194" font-size="16" font-weight="700" fill="#0E0E10">Skills</text>
+    <text x="56" y="216" font-size="12" fill="#6F6F6B">54 of ours, plus ECC's</text>
+    <text x="56" y="232" font-size="12" fill="#6F6F6B">loaded only when needed</text>
+    <rect x="230" y="166" width="178" height="80" rx="12" fill="#FFFFFF" stroke="#E5E4DE" stroke-width="1"/>
+    <text x="246" y="194" font-size="16" font-weight="700" fill="#0E0E10">Rules</text>
+    <text x="246" y="216" font-size="12" fill="#6F6F6B">7 of ours, plus ECC's</text>
+    <text x="246" y="232" font-size="12" fill="#6F6F6B">always in context</text>
+    <rect x="40" y="258" width="178" height="80" rx="12" fill="#FFFFFF" stroke="#E5E4DE" stroke-width="1"/>
+    <text x="56" y="286" font-size="16" font-weight="700" fill="#0E0E10">Commands</text>
+    <text x="56" y="308" font-size="12" fill="#6F6F6B">ECC's, plus our own</text>
+    <text x="56" y="324" font-size="12" fill="#6F6F6B">/agent-frameworks</text>
+    <rect x="230" y="258" width="178" height="80" rx="12" fill="#FFFFFF" stroke="#E5E4DE" stroke-width="1"/>
+    <text x="246" y="286" font-size="16" font-weight="700" fill="#0E0E10">Agents</text>
+    <text x="246" y="308" font-size="12" fill="#6F6F6B">reviewers, planners,</text>
+    <text x="246" y="324" font-size="12" fill="#6F6F6B">build fixers, from ECC</text>
+    <rect x="40" y="350" width="178" height="80" rx="12" fill="#FFFFFF" stroke="#E5E4DE" stroke-width="1"/>
+    <text x="56" y="378" font-size="16" font-weight="700" fill="#0E0E10">Hooks</text>
+    <text x="56" y="400" font-size="12" fill="#6F6F6B">2 guards: no --no-verify,</text>
+    <text x="56" y="416" font-size="12" fill="#6F6F6B">no editing linter config</text>
+    <rect x="230" y="350" width="178" height="80" rx="12" fill="#FFFFFF" stroke="#E5E4DE" stroke-width="1"/>
+    <text x="246" y="378" font-size="16" font-weight="700" fill="#0E0E10">MCP servers</text>
+    <text x="246" y="400" font-size="12" fill="#6F6F6B">context7, BigQuery, Miro,</text>
+    <text x="246" y="416" font-size="12" fill="#6F6F6B">Jira, Confluence, GitHub</text>
+    <text x="40" y="454" font-size="11.5" fill="#A3A39D">Built from a pinned ECC commit plus our <tspan font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">custom/</tspan> and <tspan font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">overlay/</tspan>.</text>
+    <g fill="none" stroke="#BFBEB7" stroke-width="1.6" stroke-linecap="round">
+      <path d="M 410 300 H 424"/>
+      <path d="M 628 300 H 652"/>
+    </g>
+    <path d="M 432 300 l -9 -4.5 v 9 z" fill="#BFBEB7"/>
+    <path d="M 660 300 l -9 -4.5 v 9 z" fill="#BFBEB7"/>
+    <rect x="432" y="188" width="196" height="44" rx="22" fill="#0E0E10"/>
+    <text x="530.0" y="215" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" font-weight="600" text-anchor="middle" fill="#FDFDFB">make install</text>
+    <text x="530.0" y="250" font-size="12" text-anchor="middle" fill="#6F6F6B">skills, rules, commands,</text>
+    <text x="530.0" y="265" font-size="12" text-anchor="middle" fill="#6F6F6B">agents, hooks</text>
+    <rect x="432" y="282" width="196" height="40" rx="20" fill="none" stroke="#1F6F5C" stroke-width="1.5"/>
+    <text x="530.0" y="307" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" font-weight="600" text-anchor="middle" fill="#0E0E10">make setup-user</text>
+    <text x="530.0" y="342" font-size="12" text-anchor="middle" fill="#6F6F6B">permissions, turns</text>
+    <text x="530.0" y="357" font-size="12" text-anchor="middle" fill="#6F6F6B">the two hooks on</text>
+    <rect x="432" y="374" width="196" height="40" rx="20" fill="none" stroke="#1F6F5C" stroke-width="1.5"/>
+    <text x="530.0" y="399" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" font-weight="600" text-anchor="middle" fill="#0E0E10">make mcp</text>
+    <text x="530.0" y="434" font-size="12" text-anchor="middle" fill="#6F6F6B">connects the MCP servers</text>
+    <text x="530.0" y="449" font-size="12" text-anchor="middle" fill="#6F6F6B">to Claude Code</text>
+    <text x="668" y="152" font-size="10.5" font-weight="700" letter-spacing="1.4" fill="#6F6F6B">WHERE IT LANDS</text>
+    <rect x="668" y="166" width="492" height="264" rx="14" fill="#FFFFFF" stroke="#E5E4DE" stroke-width="1"/>
+    <text x="848" y="194" font-size="10.5" font-weight="600" text-anchor="middle" fill="#A3A39D">Skills</text>
+    <text x="904" y="194" font-size="10.5" font-weight="600" text-anchor="middle" fill="#A3A39D">Agents</text>
+    <text x="960" y="194" font-size="10.5" font-weight="600" text-anchor="middle" fill="#A3A39D">Commands</text>
+    <text x="1016" y="194" font-size="10.5" font-weight="600" text-anchor="middle" fill="#A3A39D">Rules</text>
+    <text x="1072" y="194" font-size="10.5" font-weight="600" text-anchor="middle" fill="#A3A39D">Hooks</text>
+    <text x="1128" y="194" font-size="10.5" font-weight="600" text-anchor="middle" fill="#A3A39D">MCP</text>
+    <rect x="668" y="206" width="492" height="1" fill="#E5E4DE"/>
+    <text x="690" y="227.2" font-size="15" font-weight="600" fill="#0E0E10">Claude Code</text>
+    <text x="690" y="244.2" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11.5" fill="#6F6F6B">~/.claude/</text>
+    <circle cx="848" cy="231.2" r="6" fill="#1F6F5C"/>
+    <circle cx="904" cy="231.2" r="6" fill="#1F6F5C"/>
+    <circle cx="960" cy="231.2" r="6" fill="#1F6F5C"/>
+    <circle cx="1016" cy="231.2" r="6" fill="#1F6F5C"/>
+    <circle cx="1072" cy="231.2" r="6" fill="#1F6F5C"/>
+    <circle cx="1128" cy="231.2" r="6" fill="#1F6F5C"/>
+    <rect x="688" y="251.4" width="452" height="1" fill="#E5E4DE" opacity="0.6"/>
+    <text x="690" y="271.6" font-size="15" font-weight="600" fill="#0E0E10">Cursor</text>
+    <text x="690" y="288.6" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11.5" fill="#6F6F6B">project .cursor/</text>
+    <circle cx="848" cy="275.6" r="6" fill="#1F6F5C"/>
+    <circle cx="904" cy="275.6" r="6" fill="#1F6F5C"/>
+    <circle cx="960" cy="275.6" r="6" fill="#1F6F5C"/>
+    <circle cx="1016" cy="275.6" r="6" fill="#1F6F5C"/>
+    <circle cx="1072" cy="275.6" r="6" fill="#1F6F5C"/>
+    <circle cx="1128" cy="275.6" r="5.25" fill="none" stroke="#D6D5CF" stroke-width="1.5"/>
+    <rect x="688" y="295.8" width="452" height="1" fill="#E5E4DE" opacity="0.6"/>
+    <text x="690" y="316.0" font-size="15" font-weight="600" fill="#0E0E10">Codex</text>
+    <text x="690" y="333.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11.5" fill="#6F6F6B">~/.codex/</text>
+    <circle cx="848" cy="320.0" r="6" fill="#1F6F5C"/>
+    <circle cx="904" cy="320.0" r="6" fill="#1F6F5C"/>
+    <circle cx="960" cy="320.0" r="5.25" fill="none" stroke="#D6D5CF" stroke-width="1.5"/>
+    <circle cx="1016" cy="320.0" r="5.25" fill="none" stroke="#D6D5CF" stroke-width="1.5"/>
+    <circle cx="1072" cy="320.0" r="5.25" fill="none" stroke="#D6D5CF" stroke-width="1.5"/>
+    <circle cx="1128" cy="320.0" r="5.25" fill="none" stroke="#D6D5CF" stroke-width="1.5"/>
+    <rect x="688" y="340.2" width="452" height="1" fill="#E5E4DE" opacity="0.6"/>
+    <text x="690" y="360.4" font-size="15" font-weight="600" fill="#0E0E10">Antigravity</text>
+    <text x="690" y="377.4" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11.5" fill="#6F6F6B">project .agents/</text>
+    <circle cx="848" cy="364.4" r="6" fill="#1F6F5C"/>
+    <circle cx="904" cy="364.4" r="6" fill="#1F6F5C"/>
+    <circle cx="960" cy="364.4" r="6" fill="#1F6F5C"/>
+    <circle cx="1016" cy="364.4" r="6" fill="#1F6F5C"/>
+    <circle cx="1072" cy="364.4" r="5.25" fill="none" stroke="#D6D5CF" stroke-width="1.5"/>
+    <circle cx="1128" cy="364.4" r="5.25" fill="none" stroke="#D6D5CF" stroke-width="1.5"/>
+    <rect x="688" y="384.6" width="452" height="1" fill="#E5E4DE" opacity="0.6"/>
+    <text x="690" y="404.8" font-size="15" font-weight="600" fill="#0E0E10">opencode</text>
+    <text x="690" y="421.8" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="11.5" fill="#6F6F6B">~/.config/opencode/</text>
+    <circle cx="848" cy="408.8" r="6" fill="#1F6F5C"/>
+    <circle cx="904" cy="408.8" r="5.25" fill="none" stroke="#D6D5CF" stroke-width="1.5"/>
+    <circle cx="960" cy="408.8" r="6" fill="#1F6F5C"/>
+    <circle cx="1016" cy="408.8" r="5.25" fill="none" stroke="#D6D5CF" stroke-width="1.5"/>
+    <circle cx="1072" cy="408.8" r="6" fill="#1F6F5C"/>
+    <circle cx="1128" cy="408.8" r="5.25" fill="none" stroke="#D6D5CF" stroke-width="1.5"/>
+    <circle cx="44" cy="489" r="4" fill="#1F6F5C"/>
+    <text x="60" y="494" font-size="14" fill="#6F6F6B">Codex and opencode have no rules layer, so <tspan font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#0E0E10">make setup-user</tspan> writes the same conventions into their AGENTS.md.</text>
+    <text x="60" y="518" font-size="14" fill="#6F6F6B">Cursor and Antigravity are project-scoped: install them per project with <tspan font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" fill="#0E0E10">make install-project</tspan>.</text>
+  </g>
+</svg>

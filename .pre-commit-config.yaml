@@ -1,0 +1,109 @@
+# This repo is JSON and markdown, so the hooks stay light. The one that earns its
+# keep is validate-manifests: a bad pin or overlay breaks every member's install
+# at once, and quietly.
+# custom/ is vendored and ported content. It is kept byte-identical to its source so it can be
+# re-synced, so our formatting hooks must not touch it — style belongs to whoever authored it.
+exclude: '^custom/'
+# commit-msg too, so `make setup` installs the trailer guard below alongside the file checks.
+default_install_hook_types: [pre-commit, commit-msg]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-json
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: trailing-whitespace
+      - id: check-added-large-files
+        args: [--maxkb=512]
+
+  # tools/ is the only Python here; ruff.toml holds the settings, custom/ stays excluded.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.8
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        # upstream.json is nothing but clone URLs and 40-char commit SHAs, which trip the
+        # high-entropy-hex detector on every pin bump. No credential ever belongs in it.
+        # Excluding it beats a baseline file that would need regenerating each bump.
+        exclude: '^upstream\.json$'
+
+  # detect-secrets above checks entropy; gitleaks knows the shapes of real provider tokens.
+  # CI also runs it over the full history, which this hook cannot see.
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      # markdownlint runs as a local hook, not from its upstream repo. pre-commit installs a
+      # remote node hook with `npm install git+file://<clone>`, which npm 11 refuses
+      # (EALLOWGIT), and a failed hook environment blocks every commit, not just Markdown
+      # ones. From the registry it installs on any npm. Dependabot bumps only `rev:` pins,
+      # so this version is bumped by hand.
+      - id: markdownlint
+        name: markdownlint
+        language: node
+        entry: markdownlint
+        additional_dependencies: [markdownlint-cli@0.49.1]
+        types: [markdown]
+        args: [--config, .markdownlint.json]
+
+      # detect-secrets above is entropy-based and does not reliably flag a GCP
+      # service-account key, which is low-entropy structured JSON — the give-away is its
+      # shape. custom/rules/gcp.md says never to create one; this is the half that
+      # actually blocks it, and it works today, unlike the hooks (see UPSTREAM.md).
+      #
+      # pygrep, not a script: it fails when the pattern matches, needs no interpreter and
+      # no file, and cannot drift when copied into a repo with a different formatter — a
+      # 64-line Python version did exactly that when it was copied verbatim into another repo.
+      - id: no-gcp-service-account-keys
+        name: block GCP service-account key files (use ADC or Secret Manager)
+        language: pygrep
+        entry: '"type"\s*:\s*"service_account"'
+        types: [json]
+
+      # The conventions skill is generated from custom/rules/. Treat it like a lockfile:
+      # if the rules changed and it was not regenerated, the two would silently diverge and
+      # Codex/opencode users would be on stale conventions.
+      - id: conventions-skill-current
+        name: team-conventions skill matches custom/rules/
+        entry: python3 tools/build-conventions-skill.py --check
+        language: system
+        pass_filenames: false
+        # always_run, not a `files:` filter: the global `exclude: ^custom/` above wins over
+        # per-hook file matching, so a filtered hook on custom/ never fires at all.
+        always_run: true
+
+      - id: validate-manifests
+        name: validate pin and manifest overlay
+        entry: python3 tools/validate-manifests.py
+        language: python
+        additional_dependencies: [jsonschema]
+        pass_filenames: false
+        always_run: true
+
+      # Commits are authored by the person whose name is on them. custom/rules/git.md says
+      # our repos reject AI attribution; this is the hook that does it: co-author trailers
+      # and "Generated with ..." lines. pr-description.yml runs the same hook on PR
+      # descriptions, so this pattern is the only copy.
+      - id: no-agent-coauthors
+        name: no AI attribution (Co-Authored-By, Generated with)
+        language: pygrep
+        stages: [commit-msg]
+        # Line by line, no --multiline: pygrep adds DOTALL with it, so `.*` ran across
+        # lines and a human co-author followed by the word "claude" anywhere was blocked.
+        args: [--ignore-case]
+        entry: '(co-authored-by:.*|generated (with|by) \[?)(claude|anthropic|copilot|cursor|gemini|codex|chatgpt|openai)'
