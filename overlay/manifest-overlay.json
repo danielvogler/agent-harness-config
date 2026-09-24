@@ -1,0 +1,190 @@
+{
+  "$comment": "Our delta against upstream ECC's manifests, applied at install time by tools/materialize.py. Expressed as a patch rather than a copy of the manifests so that bumping the upstream SHA never produces a merge conflict.",
+  "version": 1,
+  "removeModules": {
+    "$comment": "Modules never installed. Removed outright so nobody can reach them by accident, including via --profile full. References to them are pruned from profiles and components automatically.",
+    "docs-ja-jp": "translation module, marked heavy",
+    "docs-zh-cn": "translation module, marked heavy",
+    "docs-ko-kr": "translation module, marked heavy",
+    "docs-pt-br": "translation module, marked heavy",
+    "docs-ru": "translation module, marked heavy",
+    "docs-tr": "translation module, marked heavy",
+    "docs-vi-vn": "translation module, marked heavy",
+    "docs-zh-tw": "translation module, marked heavy",
+    "docs-de-de": "translation module, marked heavy",
+    "prediction-market-skills": "upstream author's own domain, not ours",
+    "ito-compute": "upstream author's own domain, not ours",
+    "supply-chain-domain": "upstream author's own domain, not ours",
+    "media-generation": "upstream author's own domain, not ours",
+    "social-distribution": "upstream author's own domain, not ours",
+    "business-content": "upstream author's own domain, not ours"
+  },
+  "removeMcpServers": {
+    "$comment": "Servers we never install. What we add is in addMcpServers; what we activate is in activateMcpServers.ids.",
+    "ito-compute": "points at an unpublished package from the upstream author's company",
+    "nexus": "upstream author's own infrastructure",
+    "jira": "upstream's entry is mcp-atlassian in Cloud shape (JIRA_EMAIL + JIRA_API_TOKEN). A self-hosted Data Center instance authenticates with a personal access token instead. Leaving it in the catalog invites someone to put a Data Center credential into a server that cannot use it. Replaced by atlassian-agent.",
+    "confluence": "confluence-mcp-server is Atlassian Cloud only. atlassian-agent covers self-hosted Confluence as well as Jira."
+  },
+  "removeFiles": {
+    "$comment": "Files deleted from the materialized .ecc/ tree before install. Modules install whole directories, so this is the only per-file lever. Every .md under ~/.claude/rules/ is loaded as an instruction in EVERY session by EVERY person — so a README living in that tree is documentation billed as always-on context. materialize.py fails loudly if a path listed here no longer exists, so an upstream rename cannot silently stop the removal.",
+    "rules/README.md": "ECC's own rules README: ~1.4k tokens of install instructions, loaded as an instruction in every session. It tells the reader how to copy rule directories into ~/.claude — which make install has already done. We exclude our own custom/rules/README.md for exactly this reason; this is the same call applied to upstream's."
+  },
+  "activateMcpServers": {
+    "$comment": "The servers the team has agreed to actually run, by id, resolved from the merged catalog (upstream's plus ours). This is the single source of truth for `make mcp`, which is what turns a catalog entry into a running server. Ids are validated against the catalog at materialize time, so a typo or an upstream rename fails loudly instead of silently activating nothing.",
+    "ids": [
+      "context7",
+      "bigquery",
+      "miro",
+      "atlassian-agent",
+      "github"
+    ]
+  },
+  "addMcpServers": {
+    "$comment": "Servers the team standardizes on, merged into ECC's mcp-configs/mcp-servers.json. NOTE: that file is a CATALOG, not an activation — installing it does not start anything. See overlay/README.md for the two commands that make a server live. context7 is deliberately absent: upstream already ships it (the collision guard in materialize.py would refuse a duplicate), and the docs-lookup agent from agents-core already expects its tools. miro is a remote entry (type + url, no command) — tools/mcp-setup.py turns that into `claude mcp add --transport http`.",
+    "bigquery": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@toolbox-sdk/server@1.10.0",
+        "--prebuilt",
+        "bigquery",
+        "--stdio"
+      ],
+      "env": {
+        "BIGQUERY_PROJECT": "YOUR_GCP_PROJECT_HERE",
+        "BIGQUERY_READONLY": "true",
+        "BIGQUERY_MAXIMUM_BYTES_BILLED": "1000000000"
+      },
+      "description": "Read-only BigQuery — list datasets, inspect schemas, run bounded queries. Google's MCP Toolbox for Databases (@toolbox-sdk/server, pinned), prebuilt bigquery profile: 9 tools including execute_sql, get_table_info and ask_data_insights. Uses Application Default Credentials; never a service-account key file. BIGQUERY_READONLY and BIGQUERY_MAXIMUM_BYTES_BILLED are set here rather than trusted to the agent, per custom/rules/gcp.md: cost is the failure mode in BigQuery, not correctness. 1e9 bytes = 1 GB ~ USD 0.005 per query. BIGQUERY_PROJECT is filled from $GOOGLE_CLOUD_PROJECT, $GCP_PROJECT or your gcloud default. Note the toolbox prints a warning that prebuilt profiles are for build-time use with trusted developers, not untrusted run-time input — which is what this is."
+    },
+    "miro": {
+      "type": "http",
+      "url": "https://mcp.miro.com/",
+      "description": "Miro boards — read and write boards, diagrams, tables and docs. Remote HTTP server operated by Miro; OAuth in the browser on first use, so no token is stored in this repo, in the Claude config, or in any dotfile. Reaches every board your Miro account can see, which for a shared team account is all of them."
+    },
+    "atlassian-agent": {
+      "command": "uvx",
+      "args": [
+        "atlassian-agent-mcp@0.3.1"
+      ],
+      "personalEnv": ["CONFLUENCE_URL", "CONFLUENCE_TOKEN", "JIRA_URL", "JIRA_TOKEN"],
+      "optionalEnv": [
+        "JIRA_URL",
+        "JIRA_TOKEN"
+      ],
+      "description": "Self-hosted Jira and Confluence. All four values are personal and come only from the environment or .env: $CONFLUENCE_URL and $JIRA_URL name the instances, $CONFLUENCE_TOKEN and $JIRA_TOKEN are personal access tokens. Nothing instance-specific lives in this repo. Jira is optional — with no Jira token the Confluence tools still work and the jira_* tools return a clear error, so JIRA_URL and JIRA_TOKEN are listed in optionalEnv and their absence is a note, not a failure. 13 tools: 7 marked read-only, 6 that write. Every write is a dry run returning a unified diff until a second, deliberate call passes apply=true, and Confluence updates carry the version that was read so a page edited in the meantime is refused rather than silently reverted. Installed from PyPI by uvx at a pinned version — no clone, no git SHA to chase. Source: github.com/danielvogler/atlassian_agent (MIT)."
+    }
+  },
+  "addModules": [
+    {
+      "id": "custom-skills",
+      "kind": "skills",
+      "$source": {
+        "from": "custom/skills",
+        "into": "skills",
+        "ignore": [
+          "skills-lock.json"
+        ]
+      },
+      "description": "Team-maintained skill library: vendored from ai-skills-library, plus skills ported from our own research repos. Portable across every supported harness.",
+      "paths": [],
+      "targets": [
+        "claude",
+        "cursor",
+        "codex",
+        "antigravity",
+        "opencode"
+      ],
+      "dependencies": [],
+      "defaultInstall": false,
+      "cost": "medium",
+      "stability": "stable"
+    },
+    {
+      "id": "custom-research",
+      "kind": "commands",
+      "$source": {
+        "from": "custom/commands",
+        "into": "commands",
+        "ignore": []
+      },
+      "description": "Team-maintained commands. Deep-research topic overlays on the custom-deep-research skill: /agent-frameworks (ported from ohmyopenagent-deep-research).",
+      "paths": [],
+      "targets": [
+        "claude",
+        "cursor",
+        "antigravity",
+        "opencode"
+      ],
+      "dependencies": [],
+      "defaultInstall": false,
+      "cost": "light",
+      "stability": "stable"
+    },
+    {
+      "id": "custom-rules",
+      "kind": "rules",
+      "$source": {
+        "from": "custom/rules",
+        "into": "rules/custom",
+        "ignore": [
+          "README.md"
+        ],
+        "note": "Namespaced under rules/custom/ rather than merged into rules/, which already has its own README.md. README.md is NOT installed: every .md under ~/.claude/rules/ is loaded as an instruction, and a file without `paths` frontmatter is loaded in EVERY session. Contributor documentation is not an instruction, and shipping it cost ~2.3k chars of always-on context for every person. It stays in the repo for contributors and is excluded from the fan-out."
+      },
+      "description": "Team-authored conventions: Python (uv/ruff, scientific-code hygiene), GCP (ADC, region pinning, BigQuery cost guardrails, destructive-op confirmation) and agent-building practice. The deliberate delta against upstream's generic rules/common/.",
+      "paths": [],
+      "targets": [
+        "claude",
+        "cursor",
+        "antigravity"
+      ],
+      "dependencies": [],
+      "defaultInstall": false,
+      "cost": "light",
+      "stability": "experimental"
+    },
+    {
+      "id": "custom-agentic",
+      "kind": "skills",
+      "$note": "A cherry-pick: no $source, because these paths already exist in upstream's tree. agentic-patterns holds 36 skills and we install 4 — taking the module would cost ~3k tokens of descriptions for 32 skills nobody asked for, and copying them into custom/skills/ would collide with upstream on name (make validate refuses it). Re-check these paths on every pin bump; a rename upstream fails the build.",
+      "description": "Cherry-picked from upstream's agentic-patterns: the four skills that matter to a team building agents — harness construction, autonomous loop patterns, cost-aware LLM pipelines, and an agent architecture audit.",
+      "paths": [
+        "skills/agent-harness-construction",
+        "skills/autonomous-loops",
+        "skills/cost-aware-llm-pipeline",
+        "skills/agent-architecture-audit"
+      ],
+      "targets": [
+        "claude",
+        "cursor",
+        "codex",
+        "antigravity",
+        "opencode"
+      ],
+      "dependencies": [],
+      "defaultInstall": false,
+      "cost": "light",
+      "stability": "stable"
+    }
+  ],
+  "addProfiles": {
+    "custom": {
+      "description": "Shared baseline: upstream rules, agents, commands, hooks and workflow-quality skills, plus our own content.",
+      "modules": [
+        "rules-core",
+        "agents-core",
+        "commands-core",
+        "hooks-runtime",
+        "platform-configs",
+        "workflow-quality",
+        "custom-skills",
+        "custom-research",
+        "custom-rules",
+        "custom-agentic"
+      ]
+    }
+  },
+  "$pathNote": "addModules[].paths is generated by tools/materialize.py from $source. Our content is copied into ECC's own skills/, commands/ and rules/ directories, because the per-harness adapters only remap paths that start with those names. A path starting with custom/ installs to ~/.claude/custom/, where nothing looks for it."
+}

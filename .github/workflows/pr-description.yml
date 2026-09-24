@@ -1,0 +1,37 @@
+name: pr-description
+
+# The commit-msg hook keeps AI attribution out of commits, but nothing local ever sees a
+# PR description, and Claude Code adds "Generated with Claude Code" there by default.
+# This runs the same hook on the description, so the pattern lives in one place
+# (.pre-commit-config.yaml). Separate from ci.yml so editing a description re-runs
+# only this, not the whole gate.
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  attribution:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      # Through env, never interpolated into the script: the description is untrusted text.
+      - name: Write the PR description to a file
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: printf '%s\n' "$BODY" > "$RUNNER_TEMP/pr-description.txt"
+
+      - name: Reject AI attribution in the PR description
+        uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
+        with:
+          extra_args: >-
+            no-agent-coauthors --hook-stage commit-msg
+            --commit-msg-filename ${{ runner.temp }}/pr-description.txt

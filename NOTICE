@@ -1,0 +1,8 @@
+agent-harness-config
+Copyright 2026 Daniel Vogler
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Skills under custom/skills/ are copied from third-party repositories and keep
+their original licenses (Apache-2.0, MIT and MPL-2.0). Their license texts, and
+the NOTICE of OpenAI Codex, are in THIRD_PARTY_LICENSES/.

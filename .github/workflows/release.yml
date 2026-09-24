@@ -1,0 +1,42 @@
+name: Release
+
+# A GitHub release when a `v*` tag is pushed. Tagging is the whole release:
+# colleagues pin tags, and the notes come from CHANGELOG.md. Nothing is built or
+# published anywhere else.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  # The same gate main gets, called rather than copied. A tag that cannot pass
+  # CI is not a release.
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  github-release:
+    name: create the GitHub release
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      # The only job that can write to the repository, and all it writes is the
+      # release.
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # A release nobody can read the notes for is half a release. The same
+      # script both checks the entry exists and renders it, so this cannot pass
+      # while the notes come out empty.
+      - name: Create the release from the changelog entry
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          scripts/changelog-section.sh "$GITHUB_REF_NAME" > "$RUNNER_TEMP/notes.md"
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file "$RUNNER_TEMP/notes.md" \
+            --verify-tag

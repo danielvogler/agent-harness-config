@@ -1,0 +1,28 @@
+name: assign-issue
+
+# An unassigned issue is one nobody feels responsible for and it is easy to lose
+# next to the ones people are already watching. Assigning it to whoever opened it
+# gives every issue an owner from the first minute; reassign from there if someone
+# else should run with it.
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign the reporter
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
+        with:
+          script: |
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              assignees: [context.payload.issue.user.login],
+            });

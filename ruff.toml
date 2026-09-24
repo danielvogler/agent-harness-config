@@ -1,0 +1,12 @@
+# Lint and format for the scripts in tools/. custom/ is vendored and never touched.
+target-version = "py312"
+line-length = 100
+extend-exclude = ["custom"]
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]
+ignore = [
+    # The formatter owns line length. What it leaves long are single strings and URLs,
+    # and splitting those by hand makes them harder to grep for.
+    "E501",
+]
