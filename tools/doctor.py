@@ -412,7 +412,21 @@ def check_mcp() -> None:
             active |= set(conf.get("mcpServers", {}))
 
     missing = [s for s in wanted if s not in active]
+    if missing and len(missing) == len(wanted):
+        # None activated at all is a valid, common state — a fresh install, or a deliberate
+        # choice not to run any server yet. That is not drift, so it does not belong in the
+        # "worth a look" count; it just gets the same pointer to how to turn them on.
+        note(
+            OK,
+            f"mcp: no agreed server active ({', '.join(missing)})",
+            "run `make mcp` if you want one — an MCP server lets an agent reach live docs or "
+            "BigQuery instead of asking you to paste results. Installing the catalog does not "
+            "start one. See overlay/README.md.",
+        )
+        return
     if missing:
+        # Some, but not all, agreed servers are active — likelier to be a partial `make mcp`
+        # run or a forgotten one than a deliberate choice, so this still warns.
         note(
             WARN,
             f"mcp: {len(missing)} of {len(wanted)} agreed server(s) not active "
