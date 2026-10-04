@@ -733,6 +733,24 @@ class TestMcp:
         assert status == doctor.WARN
         assert headline == "mcp: 1 of 2 agreed server(s) not active (bigquery)"
 
+    def test_reports_ok_when_no_agreed_servers_are_active_at_all(self, doctor, repo, home):
+        # Arrange
+        write_json(
+            repo / "overlay" / "manifest-overlay.json",
+            {"activateMcpServers": {"ids": ["context7", "bigquery"]}},
+        )
+        # No ~/.claude.json at all: nothing has ever been activated. This is the common,
+        # deliberate "haven't run `make mcp`" state, not drift — it must not warn.
+
+        # Act
+        doctor.check_mcp()
+
+        # Assert
+        [(status, headline, advice)] = doctor.findings
+        assert status == doctor.OK
+        assert headline == "mcp: no agreed server active (context7, bigquery)"
+        assert "make mcp" in advice
+
     def test_reports_error_when_active_server_does_not_connect(
         self, doctor, repo, home, monkeypatch
     ):
