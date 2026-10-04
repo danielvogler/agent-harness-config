@@ -70,25 +70,23 @@ is paste a Data Center credential into a server that cannot use it.
 | --- | --- | --- | --- | --- |
 | `bigquery` | stdio, `npx` | BigQuery in one GCP project | Application Default Credentials | `BIGQUERY_READONLY` and a 1 GB `BIGQUERY_MAXIMUM_BYTES_BILLED` are set **at the server**, not left to the agent. A runaway query errors instead of invoicing. |
 | `miro` | remote HTTP, `https://mcp.miro.com/` | Miro boards | OAuth in the browser; nothing stored locally | Every board the authenticating Miro account can see. On a shared team account that is all of them. Miro operates the server, so board content transits their infrastructure — which it already does. |
-| `atlassian-agent` | stdio, `uvx` from git | whatever `$JIRA_URL` / `$CONFLUENCE_URL` name; no defaults | Personal access tokens, read from `$JIRA_TOKEN` and `$CONFLUENCE_TOKEN` | Everything your account can read in Jira and Confluence — including other people's tickets, and anything anyone has pasted into a wiki page. 13 tools, 7 marked read-only. Writes are dry runs returning a unified diff until a second call passes `apply=true`, and Confluence updates carry the version that was read, so a page edited in between is refused rather than silently reverted. |
+| `atlassian-agent` | stdio, `uvx` from PyPI | whatever `$JIRA_URL` / `$CONFLUENCE_URL` name; no defaults | Personal access tokens, read from `$JIRA_TOKEN` and `$CONFLUENCE_TOKEN` | Everything your account can read in Jira and Confluence — including other people's tickets, and anything anyone has pasted into a wiki page. 22 tools, 13 marked read-only. Writes are dry runs returning a unified diff until a second call passes `apply=true`, and Confluence updates carry the version that was read, so a page edited in between is refused rather than silently reverted. |
 
 Tool counts and description sizes in this table are measured from each server's own
 `tools/list` over a real MCP handshake, not read off a README. `@google-cloud/mcp-toolbox-bigquery`
 is why.
 
 `atlassian-agent` is <https://github.com/danielvogler/atlassian_agent> (MIT), owned by this
-team. Its `pyproject.toml` declares an `atlassian-agent-mcp` console script, so `uvx` runs it
-straight from the git URL — **no clone, no `make setup`, no local checkout**. Verified by
-an MCP handshake against a cold `uvx` with nothing on disk and no tokens set: it initialises
-and returns all 13 tools (7 annotated `readOnlyHint`, 6 that write). Note the upstream
-README's prose says "nine read, four write"; its own tables, and the server itself, say 7
-and 6. Missing tokens surface at tool-call time, not at startup — which is deliberate, since
-Jira is optional and the Confluence tools work without it.
+team, and published to PyPI as `atlassian-agent-mcp`, so `uvx` runs it straight from there
+— **no clone, no `make setup`, no local checkout**. Verified for 0.4.0 on 2026-10-04 by an
+MCP handshake with no tokens set: it initialises and returns 22 tools (13 annotated
+`readOnlyHint`, 9 that write). Missing tokens surface at tool-call time, not at startup —
+which is deliberate, since Jira is optional and the Confluence tools work without it.
 
-It is not on PyPI, so the entry pins a **commit SHA** rather than tracking `main` — the same
-discipline this repo applies to ECC. Bumping it is a deliberate edit to the overlay.
-Publishing to PyPI would let the entry become `uvx atlassian-agent-mcp` with a version range;
-worth doing, not required.
+The entry pins an **exact version** (`atlassian-agent-mcp@0.4.0`) rather than a range — the
+same discipline this repo applies to ECC. Bumping it is a deliberate edit to the overlay and
+to `upstream.json`, after reading the release's changelog section. 0.4.0 changed no server
+code; it lets `atlassian-python-api` resolve to 5.x.
 
 The tokens are per-person and must never be committed, so the catalog names them in
 `personalEnv` without a value. `mcp-setup.py` checks they are exported and then leaves them

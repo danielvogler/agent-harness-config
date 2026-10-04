@@ -66,14 +66,14 @@
     "atlassian-agent": {
       "command": "uvx",
       "args": [
-        "atlassian-agent-mcp@0.3.1"
+        "atlassian-agent-mcp@0.4.0"
       ],
       "personalEnv": ["CONFLUENCE_URL", "CONFLUENCE_TOKEN", "JIRA_URL", "JIRA_TOKEN"],
       "optionalEnv": [
         "JIRA_URL",
         "JIRA_TOKEN"
       ],
-      "description": "Self-hosted Jira and Confluence. All four values are personal: $CONFLUENCE_URL and $JIRA_URL name the instances and may come from .env, $CONFLUENCE_TOKEN and $JIRA_TOKEN are personal access tokens that must be exported in your shell, because the server inherits them from it and they are never stored in the Claude config. Nothing instance-specific lives in this repo. Jira is optional — with no Jira token the Confluence tools still work and the jira_* tools return a clear error, so JIRA_URL and JIRA_TOKEN are listed in optionalEnv and their absence is a note, not a failure. 13 tools: 7 marked read-only, 6 that write. Every write is a dry run returning a unified diff until a second, deliberate call passes apply=true, and Confluence updates carry the version that was read so a page edited in the meantime is refused rather than silently reverted. Installed from PyPI by uvx at a pinned version — no clone, no git SHA to chase. Source: github.com/danielvogler/atlassian_agent (MIT)."
+      "description": "Self-hosted Jira and Confluence. All four values are personal: $CONFLUENCE_URL and $JIRA_URL name the instances and may come from .env, $CONFLUENCE_TOKEN and $JIRA_TOKEN are personal access tokens that must be exported in your shell, because the server inherits them from it and they are never stored in the Claude config. Nothing instance-specific lives in this repo. Jira is optional — with no Jira token the Confluence tools still work and the jira_* tools return a clear error, so JIRA_URL and JIRA_TOKEN are listed in optionalEnv and their absence is a note, not a failure. 22 tools: 13 marked read-only, 9 that write. Every write is a dry run returning a unified diff until a second, deliberate call passes apply=true, and Confluence updates carry the version that was read so a page edited in the meantime is refused rather than silently reverted. Installed from PyPI by uvx at a pinned version — no clone, no git SHA to chase. Source: github.com/danielvogler/atlassian_agent (MIT)."
     },
     "github": {
       "command": "github-mcp-server",
