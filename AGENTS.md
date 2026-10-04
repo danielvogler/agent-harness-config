@@ -16,10 +16,10 @@ Ask before you run anything:
 
 1. **Which tools do they use?** Claude Code, Codex and opencode install once for the whole
    machine. Cursor and Antigravity install per project, so ask which project folders.
-2. **Do they want the Confluence, Jira, GitHub and BigQuery servers?** If yes, they need
-   their Confluence URL and token (and optionally Jira's) first. Ask for them; never guess.
-   They go in `.env`, copied from `.env.example`, which lists every variable `make mcp`
-   reads.
+2. **Do they want the Confluence, Jira and BigQuery servers, and the opt-in GitHub one?** If
+   yes, they need their Confluence URL and token (and optionally Jira's) first. Ask for
+   them; never guess. Tokens go in their shell profile (`~/.bashrc` or `~/.zshrc`), URLs in
+   `.env`, copied from `.env.example`, which lists every variable `make mcp` reads.
 
 Then run, in order: `make install`, `make setup-user`, `make doctor`, then
 `make install-project PROJECT=<path>` for each Cursor or Antigravity project, then `make mcp`
@@ -33,12 +33,15 @@ make setup-user  # once per person — turns them on (permissions, hooks, no AI 
 make update      # thereafter — pulls this repo and reinstalls
 ```
 
-`make mcp` is separate and reads personal values from `.env` (copy `.env.example`) or the
-environment: `CONFLUENCE_URL` and `CONFLUENCE_TOKEN` (plus optional `JIRA_URL` and
-`JIRA_TOKEN`) for Atlassian, `GITHUB_PERSONAL_ACCESS_TOKEN` for GitHub (fine-grained, scoped
-to the repos you use). If you are an agent setting this up for someone, ask them for those
-rather than guessing; `make mcp` names the variable and skips that one server when it cannot
-find it. Tokens come from each system's own profile settings.
+`make mcp` is separate and reads personal values from the environment, and the non-secret
+ones also from `.env` (copy `.env.example`): `CONFLUENCE_URL` and `CONFLUENCE_TOKEN` (plus
+optional `JIRA_URL` and `JIRA_TOKEN`) for Atlassian. GitHub is opt-in with
+`make mcp ADD=github` and needs `GITHUB_PERSONAL_ACCESS_TOKEN` (fine-grained, scoped to the
+repos you use) and `brew install github-mcp-server`. Tokens must be exported in the shell:
+`make mcp` never stores them, the servers inherit them when Claude Code starts. If you are
+an agent setting this up for someone, ask them for those rather than guessing; `make mcp`
+names the variable and skips that one server when it cannot find it. Tokens come from each
+system's own profile settings.
 
 Contributing to this repo (not needed just to install it):
 
@@ -55,7 +58,7 @@ make doctor      # is what you have installed still current?
 make context     # what the installed config costs in context every session
 make check       # everything CI runs (hooks, tests, then the overlay against the pinned upstream)
 make test        # unit tests for tools/ (pip install -r requirements-dev.txt first)
-make mcp         # activate the agreed MCP servers (writes to your Claude config)
+make mcp         # activate the agreed MCP servers (writes to your Claude config); ADD=github for GitHub
 make reinstall   # clean reinstall — clears files dropped from custom/
 make bump        # show what changing the upstream pin would do
 make uninstall   # remove everything installed (only files recorded in install-state)

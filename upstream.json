@@ -35,10 +35,11 @@
     },
     "atlassian-agent": {
       "repo": "https://github.com/danielvogler/atlassian_agent.git",
-      "sha": "cb9d01b17e8af2ce67d96945c2eb49aeb753c599",
-      "vendoredOn": "2026-08-29",
+      "package": "atlassian-agent-mcp",
+      "version": "0.4.0",
+      "vendoredOn": "2026-10-04",
       "license": "MIT",
-      "portNotes": "Not vendored. Referenced as an MCP server, run with `uvx --from git+<repo>@<sha> atlassian-agent-mcp` \u2014 the package declares that console script, so no clone is needed. Pinned to a SHA because it is not on PyPI and this repo never tracks a moving branch. Bump deliberately: change the sha here and the matching one in overlay/manifest-overlay.json, then re-run make mcp."
+      "portNotes": "Not vendored. Referenced as an MCP server, run with `uvx atlassian-agent-mcp@<version>` from PyPI \u2014 no clone, no git SHA. Pinned to an exact version because this repo never tracks a moving target. Bump deliberately: change the version here and the matching one in overlay/manifest-overlay.json, then re-run make mcp."
     }
   }
 }

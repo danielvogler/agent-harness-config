@@ -24,6 +24,15 @@ Two shapes of catalog entry are understood:
   - remote — {"type": "http"|"sse", "url": ...}, a server someone else operates, which
              authenticates in the browser rather than from a token in a file.
 
+Secrets are never written into the registration. A token or key is checked for here, then
+left out of `claude mcp add`, so the server inherits it from the shell Claude Code starts
+in. A token typed into the Claude config goes stale silently the day it is rotated: the
+shell has the new one, the config still sends the old one, and some servers (self-hosted
+Confluence among them) answer an expired token as an anonymous user rather than a 401.
+
+Servers outside `activateMcpServers.ids` can be opted into with `--add <id>`; the catalog
+carries entries, like `github`, that not everyone wants loaded into every session.
+
 Idempotent: servers already present are reported and skipped, never re-added or clobbered.
 Removing and re-adding is a decision someone makes, same reasoning as installing a server
 in the first place — so a server whose environment now has keys that would resolve but
@@ -54,6 +63,10 @@ def run(cmd: list[str], **kw) -> subprocess.CompletedProcess:
 SECRET_KEY = re.compile(r"TOKEN|SECRET|PASSWORD|CREDENTIAL|_KEY$|APIKEY|API_KEY")
 
 
+def is_secret(key: str) -> bool:
+    return bool(SECRET_KEY.search(key.upper()))
+
+
 def redact(cmd: list[str]) -> str:
     """The command as a printable string, with credential values masked.
 
@@ -65,21 +78,21 @@ def redact(cmd: list[str]) -> str:
     out = []
     for part in cmd:
         key, sep, _ = part.partition("=")
-        out.append(f"{key}=***" if sep and SECRET_KEY.search(key.upper()) else part)
+        out.append(f"{key}=***" if sep and is_secret(key) else part)
     return " ".join(out)
 
 
-def load_env_file(path: Path) -> int:
-    """Read KEY=VALUE lines into the environment. Returns how many keys it set.
+def load_env_file(path: Path) -> frozenset[str]:
+    """Read KEY=VALUE lines into the environment. Returns the keys it set.
 
-    Tokens already live somewhere on most machines — the atlassian_agent checkout keeps
-    them in its own .env. Reading from there beats copying them into a second file: one
-    copy is one thing to rotate and one thing to leak.
+    Good for values that may be stored in the registration, like an instance URL. A secret
+    found only here is refused by `build_command`: the server will not see this file, so
+    it has to be in the shell Claude Code starts in.
 
     An existing environment variable always wins, matching dotenv everywhere else. Values
     are never printed.
     """
-    count = 0
+    keys: set[str] = set()
     for raw in path.read_text().splitlines():
         line = raw.strip()
         if not line or line.startswith("#") or "=" not in line:
@@ -90,8 +103,8 @@ def load_env_file(path: Path) -> int:
         if not key or not value or os.environ.get(key):
             continue
         os.environ[key] = value
-        count += 1
-    return count
+        keys.add(key)
+    return frozenset(keys)
 
 
 def gcloud_project() -> str | None:
@@ -130,10 +143,16 @@ def resolvers() -> dict[str, str | None]:
 HOWTO = {
     "YOUR_GCP_PROJECT_HERE": "run `gcloud config set project <id>`, or `make mcp GCP_PROJECT=<id>`",
     "CONFLUENCE_URL": "set CONFLUENCE_URL to your Confluence base URL in .env",
-    "CONFLUENCE_TOKEN": "create a personal access token in your Confluence profile, then set CONFLUENCE_TOKEN in .env",
+    "CONFLUENCE_TOKEN": "create a personal access token in your Confluence profile, then export CONFLUENCE_TOKEN in your shell profile",
     "JIRA_URL": "set JIRA_URL to your Jira base URL in .env",
-    "JIRA_TOKEN": "create a personal access token in your Jira profile, then set JIRA_TOKEN in .env",
-    "GITHUB_PERSONAL_ACCESS_TOKEN": "create a token at github.com/settings/tokens (fine-grained, scoped to the repos you use), then export GITHUB_PERSONAL_ACCESS_TOKEN",
+    "JIRA_TOKEN": "create a personal access token in your Jira profile, then export JIRA_TOKEN in your shell profile",
+    "GITHUB_PERSONAL_ACCESS_TOKEN": "create a token at github.com/settings/tokens (fine-grained, scoped to the repos you use), then export GITHUB_PERSONAL_ACCESS_TOKEN in your shell profile",
+}
+
+# How to get a server's command onto PATH, for commands that are not part of the
+# prerequisites everyone already has (npx, uvx).
+INSTALL = {
+    "github-mcp-server": "brew install github-mcp-server, or a release binary from github.com/github/github-mcp-server/releases",
 }
 
 
@@ -191,13 +210,18 @@ def already_installed() -> set[str]:
 
 
 def build_command(
-    name: str, spec: dict, values: dict[str, str | None]
+    name: str,
+    spec: dict,
+    values: dict[str, str | None],
+    file_keys: frozenset[str] = frozenset(),
 ) -> tuple[list[str], list[str], list[str], set[str]]:
     """Return (command, problems, notes, resolved_env_keys).
 
     A non-empty problems list means do not run the command. `resolved_env_keys` is every
-    env var name that resolved to a usable value right now — used to spot drift against an
-    already-registered server, not just to build a fresh `claude mcp add`.
+    env var name that resolved and goes into the registration — used to spot drift against
+    an already-registered server, not just to build a fresh `claude mcp add`. Secrets are
+    checked but never part of it; `file_keys` are the ones that came from .env rather than
+    the shell, which for a secret means the server would start without it.
     """
     problems: list[str] = []
     notes: list[str] = []
@@ -241,17 +265,26 @@ def build_command(
                 resolved, problem = env_value(key, value)
             else:
                 problem = f"{key} is unset — {HOWTO.get(key, f'export {key}=<value>')}"
-        if not problem:
+        elif is_secret(key) and key in file_keys:
+            problem = (
+                f"{key} is only in the env file — the server reads it from the shell Claude "
+                f"Code starts in, so export {key} in your shell profile instead"
+            )
+        if problem and key in optional:
+            notes.append(f"{problem}; until then that part of the server is unavailable")
+        elif problem:
+            problems.append(problem)
+        elif not is_secret(key):
+            # Secrets stop here: checked, never stored, inherited from the shell instead.
             cmd += ["--env", f"{key}={resolved}"]
             resolved_keys.add(key)
-        elif key in optional:
-            notes.append(f"{key} unset — that part of the server will be unavailable")
-        else:
-            problems.append(problem)
 
     if not spec.get("command"):
         problems.append("catalog entry has neither a command nor a type/url")
         return cmd, problems, notes, resolved_keys
+    if not shutil.which(spec["command"]):
+        how = INSTALL.get(spec["command"], "install it first")
+        problems.append(f"`{spec['command']}` is not on PATH — {how}")
 
     argv = [spec["command"], *spec.get("args", [])]
     resolved_argv = []
@@ -289,28 +322,38 @@ def registered_env_keys(name: str) -> set[str] | None:
     return keys
 
 
-def drift_note(name: str, resolved_keys: set[str]) -> str | None:
-    """A note to print if env vars now resolve that aren't part of the live registration.
+def drift_notes(name: str, resolved_keys: set[str]) -> list[str]:
+    """Notes on how an already-registered server differs from what `make mcp` would add.
 
-    None if there is nothing to resolve (remote servers), the registration can't be read,
-    or nothing is missing — the common, silent case.
+    Two kinds: env vars that now resolve but aren't part of the registration, and secrets
+    stored in it from before secrets were left to the shell. Empty if the registration
+    can't be read or matches — the common, silent case.
     """
-    if not resolved_keys:
-        return None
     registered = registered_env_keys(name)
     if registered is None:
-        return None
+        return []
+    fix = f"run `claude mcp remove {name} -s user` then `make mcp`"
+    notes = []
     missing = sorted(resolved_keys - registered)
-    if not missing:
-        return None
-    keys = ", ".join(missing)
-    verb = "resolves" if len(missing) == 1 else "resolve"
-    be = "is" if len(missing) == 1 else "are"
-    return (
-        f"{keys} now {verb} but {be} not part of the "
-        f"registered server — run `claude mcp remove {name} -s user` then `make mcp` to "
-        "pick it up"
-    )
+    if missing:
+        keys = ", ".join(missing)
+        verb, be = ("resolves", "is") if len(missing) == 1 else ("resolve", "are")
+        notes.append(
+            f"{keys} now {verb} but {be} not part of the registered server — {fix} to pick it up"
+        )
+    stored = sorted(k for k in registered if is_secret(k))
+    if stored:
+        notes.append(
+            f"{', '.join(stored)} is stored in your Claude config and goes stale when the token "
+            f"changes — {fix} so the server reads it from your shell"
+        )
+    return notes
+
+
+def wanted_ids(agreed: list[str], added: list[str]) -> list[str]:
+    """The agreed servers, then any opted into with --add (comma-separated or repeated)."""
+    extra = [i.strip() for group in added for i in group.split(",") if i.strip()]
+    return list(dict.fromkeys([*agreed, *extra]))
 
 
 def main() -> int:
@@ -329,12 +372,20 @@ def main() -> int:
             "them; an existing environment variable still wins."
         ),
     )
+    parser.add_argument(
+        "--add",
+        action="append",
+        default=[],
+        metavar="ID",
+        help="also activate this catalog server, beyond the agreed ones (repeatable, or comma-separated)",
+    )
     args = parser.parse_args()
 
     env_file = args.env_file or (REPO / ".env")
+    file_keys: frozenset[str] = frozenset()
     if env_file.exists():
-        n = load_env_file(env_file)
-        print(f"read {n} variable(s) from {env_file}")
+        file_keys = load_env_file(env_file)
+        print(f"read {len(file_keys)} variable(s) from {env_file}")
     elif args.env_file:
         print(f"--env-file {env_file} does not exist", file=sys.stderr)
         return 1
@@ -347,7 +398,8 @@ def main() -> int:
         return 1
 
     catalog = json.loads(CATALOG.read_text())["mcpServers"]
-    wanted = json.loads(OVERLAY.read_text()).get("activateMcpServers", {}).get("ids", [])
+    agreed = json.loads(OVERLAY.read_text()).get("activateMcpServers", {}).get("ids", [])
+    wanted = wanted_ids(agreed, args.add)
     if not wanted:
         print("no servers declared in activateMcpServers — nothing to do")
         return 0
@@ -362,11 +414,10 @@ def main() -> int:
             print(f"[skip] {name}: not in the catalog (materialize should have caught this)")
             failures += 1
             continue
-        cmd, problems, notes, resolved_keys = build_command(name, spec, values)
+        cmd, problems, notes, resolved_keys = build_command(name, spec, values, file_keys)
 
         if name in present:
-            drift = drift_note(name, resolved_keys)
-            if drift:
+            for drift in drift_notes(name, resolved_keys):
                 print(f"[note] {name}: {drift}")
             print(f"[ ok ] {name}: already configured")
             continue

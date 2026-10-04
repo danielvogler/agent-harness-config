@@ -70,48 +70,82 @@ is paste a Data Center credential into a server that cannot use it.
 | --- | --- | --- | --- | --- |
 | `bigquery` | stdio, `npx` | BigQuery in one GCP project | Application Default Credentials | `BIGQUERY_READONLY` and a 1 GB `BIGQUERY_MAXIMUM_BYTES_BILLED` are set **at the server**, not left to the agent. A runaway query errors instead of invoicing. |
 | `miro` | remote HTTP, `https://mcp.miro.com/` | Miro boards | OAuth in the browser; nothing stored locally | Every board the authenticating Miro account can see. On a shared team account that is all of them. Miro operates the server, so board content transits their infrastructure — which it already does. |
-| `atlassian-agent` | stdio, `uvx` from git | whatever `$JIRA_URL` / `$CONFLUENCE_URL` name; no defaults | Personal access tokens, read from `$JIRA_TOKEN` and `$CONFLUENCE_TOKEN` | Everything your account can read in Jira and Confluence — including other people's tickets, and anything anyone has pasted into a wiki page. 13 tools, 7 marked read-only. Writes are dry runs returning a unified diff until a second call passes `apply=true`, and Confluence updates carry the version that was read, so a page edited in between is refused rather than silently reverted. |
+| `atlassian-agent` | stdio, `uvx` from PyPI | whatever `$JIRA_URL` / `$CONFLUENCE_URL` name; no defaults | Personal access tokens, read from `$JIRA_TOKEN` and `$CONFLUENCE_TOKEN` | Everything your account can read in Jira and Confluence — including other people's tickets, and anything anyone has pasted into a wiki page. 22 tools, 13 marked read-only. Writes are dry runs returning a unified diff until a second call passes `apply=true`, and Confluence updates carry the version that was read, so a page edited in between is refused rather than silently reverted. |
 
 Tool counts and description sizes in this table are measured from each server's own
 `tools/list` over a real MCP handshake, not read off a README. `@google-cloud/mcp-toolbox-bigquery`
 is why.
 
 `atlassian-agent` is <https://github.com/danielvogler/atlassian_agent> (MIT), owned by this
-team. Its `pyproject.toml` declares an `atlassian-agent-mcp` console script, so `uvx` runs it
-straight from the git URL — **no clone, no `make setup`, no local checkout**. Verified by
-an MCP handshake against a cold `uvx` with nothing on disk and no tokens set: it initialises
-and returns all 13 tools (7 annotated `readOnlyHint`, 6 that write). Note the upstream
-README's prose says "nine read, four write"; its own tables, and the server itself, say 7
-and 6. Missing tokens surface at tool-call time, not at startup — which is deliberate, since
-Jira is optional and the Confluence tools work without it.
+team, and published to PyPI as `atlassian-agent-mcp`, so `uvx` runs it straight from there
+— **no clone, no `make setup`, no local checkout**. Verified for 0.4.0 on 2026-10-04 by an
+MCP handshake with no tokens set: it initialises and returns 22 tools (13 annotated
+`readOnlyHint`, 9 that write). Missing tokens surface at tool-call time, not at startup —
+which is deliberate, since Jira is optional and the Confluence tools work without it.
 
-It is not on PyPI, so the entry pins a **commit SHA** rather than tracking `main` — the same
-discipline this repo applies to ECC. Bumping it is a deliberate edit to the overlay.
-Publishing to PyPI would let the entry become `uvx atlassian-agent-mcp` with a version range;
-worth doing, not required.
+The entry pins an **exact version** (`atlassian-agent-mcp@0.4.0`) rather than a range — the
+same discipline this repo applies to ECC. Bumping it is a deliberate edit to the overlay and
+to `upstream.json`, after reading the release's changelog section. 0.4.0 changed no server
+code; it lets `atlassian-python-api` resolve to 5.x.
 
-The tokens are per-person and must never be committed, so the catalog carries
-`YOUR_JIRA_TOKEN_HERE` / `YOUR_CONFLUENCE_TOKEN_HERE` and `mcp-setup.py` fills them from
-`$JIRA_TOKEN` and `$CONFLUENCE_TOKEN`.
+The tokens are per-person and must never be committed, so the catalog names them in
+`personalEnv` without a value. `mcp-setup.py` checks they are exported and then leaves them
+out of the registration; see [secrets stay in the shell](#secrets-stay-in-the-shell).
 
-### `github`, activated 2026-09-15 — upstream's own catalog entry, unchanged
+### `github`, replaced 2026-10-04 — GitHub's own server, opt-in
 
-Added to `activateMcpServers.ids`, not to `addMcpServers`: upstream's catalog already
-carries a correct `github` entry (`npx -y @modelcontextprotocol/server-github`, official
-Anthropic-maintained package), the same situation as `context7` above — nothing to
-override, just switch it on. No `removeMcpServers` reason applies either, unlike `jira` and
-`confluence`.
+Upstream's `github` entry runs `npx -y @modelcontextprotocol/server-github`. npm marks that
+package deprecated ("Package no longer supported"), last release 2025.4.8, so this file
+calling it the official, maintained package was wrong. It was activated for everyone on
+2026-09-15 and never registered on at least one machine, because `make mcp` skips a server
+whose token is unset.
+
+The overlay now drops it in `removeMcpServers` and adds GitHub's own server under the same
+id: [github/github-mcp-server](https://github.com/github/github-mcp-server) (MIT), checked
+against v1.14.0. It is a single Go binary, run as `github-mcp-server stdio`.
+
+- **Binary, not Docker.** GitHub documents a Docker image first, but Docker Desktop needs a
+  paid licence in large organisations and was not installed where this was tested.
+  `brew install github-mcp-server` or a release binary is one step. Homebrew lags releases
+  (1.12.2 against 1.14.0 at the time) and cannot be pinned from here; accepted, since the
+  server's tool surface is what the toolset flag limits anyway.
+- **Opt-in.** Not in `activateMcpServers.ids`; `make mcp ADD=github` adds it. `gh` already
+  covers GitHub for most people, and every activated server loads its tool descriptions
+  into every session.
+- **Toolsets limited** to `context,issues,projects,pull_requests`. Those cover what agents
+  were doing through long `gh api graphql` calls: issue types, sub-issues (`sub_issue_write`)
+  and Projects board fields, including batch updates of up to 50 items. Repos, actions,
+  rulesets and the rest stay with `gh`, as do deleting an issue and linking a repo to a
+  project, which the server has no tool for.
 
 | id | shape | what it reaches | credentials | blast radius |
 | --- | --- | --- | --- | --- |
-| `github` | stdio, `npx` | every repo, issue and PR your token can see | `$GITHUB_PERSONAL_ACCESS_TOKEN`, a personal token — never a team-owned one | Whatever the token's scopes allow: creating, editing and closing issues and PRs, pushing files, merging. A fine-grained token scoped to the repos actually in use is safer than a classic PAT with blanket `repo` scope. |
+| `github` | stdio, `github-mcp-server` binary | issues, Projects and PRs of the token's owner | `$GITHUB_PERSONAL_ACCESS_TOKEN`, a personal token — never a team-owned one, inherited from the shell | Whatever the token allows within the four toolsets: creating, editing and closing issues and PRs, changing board fields, merging. A fine-grained token covers one owner, which also bounds it to that owner's repos. |
 
-The env key is `GITHUB_PERSONAL_ACCESS_TOKEN`, not `GITHUB_TOKEN` — upstream's own naming,
-kept as-is rather than aliased, so the catalog entry stays byte-identical to upstream's.
-Resolution goes through the same generic `env_value()` precedence as every other server
-(`mcp-setup.py`, [above](#env-precedence-and-keeping-the-tool-generic)): `$GITHUB_PERSONAL_ACCESS_TOKEN`
-in your shell wins, and with nothing set `make mcp` skips the server rather than registering
-a broken one.
+The env key is `GITHUB_PERSONAL_ACCESS_TOKEN`, the name GitHub's server reads.
+
+### Secrets stay in the shell
+
+Until 2026-10-04 `make mcp` passed every resolved value, tokens included, as
+`claude mcp add --env KEY=value`, so tokens ended up written into `~/.claude.json`. When a
+token was rotated, the shell had the new one and the config kept sending the old one. A
+stored value replaces the inherited one, so exporting the new token changed nothing, and
+neither did `/mcp` reconnect. Self-hosted Confluence made it worse: it answers an expired
+token as an anonymous user, not with a 401, so searches still returned public pages and
+restricted pages came back as "no content with the given id, or no permission", which
+several sessions misread as a permissions problem.
+
+Now any key matching the secret pattern in `mcp-setup.py` (`TOKEN`, `SECRET`, `PASSWORD`,
+`CREDENTIAL`, `API_KEY`, ...) is checked and left out of the registration. Claude Code starts
+stdio servers with its own environment, so the server reads the token from the shell Claude
+Code was started in, and a rotated token takes effect on the next start. Consequences:
+
+- A token found only in `.env` is refused with the fix, because the server would never see
+  it. `.env` is for non-secret values such as instance URLs.
+- An existing registration that still stores a token gets a `[note]` with the
+  remove-and-re-add commands.
+- Per-folder tokens work for free: with direnv exporting a different token in each owner's
+  folder, the server and `gh` (via `GH_TOKEN`) follow whichever folder Claude Code starts in.
 
 ### The `bigquery` entry pointed at a package that does not exist
 
@@ -154,8 +188,8 @@ fails silently at exactly the place nobody looks. `make doctor` reports which se
    registering a broken one.
 
 The Atlassian entry has no catalog values at all: both URLs and both tokens are
-`personalEnv`, because which instance you use is as personal as your token. Set them in
-`.env` and nothing here changes. The same rule
+`personalEnv`, because which instance you use is as personal as your token. Set the URLs in
+`.env` and export the tokens in your shell, and nothing here changes. The same rule
 now lets `$GOOGLE_CLOUD_PROJECT` override the BigQuery project, which previously only
 followed `gcloud`.
 
@@ -170,9 +204,9 @@ Two conventions this adds to a catalog entry, both ours rather than upstream's:
 - **`optionalEnv`** — keys whose absence is a note rather than a failure. `atlassian-agent`
   serves its Confluence tools with no Jira credentials at all and returns a clear error per
   `jira_*` tool, so demanding `JIRA_TOKEN` would refuse a server that works.
-- **`--env-file`** (`make mcp ENV_FILE=...`, default `./.env`) — read tokens from wherever
-  they already are instead of copying them. One copy is one thing to rotate and one thing
-  to leak. An existing environment variable still wins.
+- **`--env-file`** (`make mcp ENV_FILE=...`, default `./.env`) — read non-secret values
+  from wherever they already are. An existing environment variable still wins. Tokens are
+  not accepted from it; see [secrets stay in the shell](#secrets-stay-in-the-shell).
 
 `mcp-setup.py` never prints a credential: `claude mcp add` takes secrets as `--env KEY=value`
 on the command line, so every printed command goes through `redact()`, which masks any value
