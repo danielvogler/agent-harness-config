@@ -62,30 +62,41 @@ clicking through permission prompts, nothing blocks a destructive command, and C
 opencode never see the team conventions. It backs up everything it touches and prints how to
 undo. Run `python3 tools/setup-user.py --dry-run` first if you want to see it before it writes.
 
-Optionally, `make mcp` connects five servers: live library docs (context7), read-only
-BigQuery, Miro boards, self-hosted Jira and Confluence, and GitHub. See
-[`overlay/README.md`](overlay/README.md).
+Optionally, `make mcp` connects four servers: live library docs (context7), read-only
+BigQuery, Miro boards, and self-hosted Jira and Confluence. A fifth, GitHub, is opt-in:
+`make mcp ADD=github`. See [`overlay/README.md`](overlay/README.md).
 
-Miro authenticates in the browser and needs nothing from you first. The others read personal
-values from `.env`, which is gitignored:
+Miro authenticates in the browser and needs nothing from you first. The others need personal
+values:
+
+- **Tokens go in your shell profile** (`~/.bashrc` or `~/.zshrc`), never in a file here.
+  `make mcp` checks they are set but does not store them; each server reads them from the
+  shell you start Claude Code in. A changed token takes effect on the next Claude Code start.
+- **Everything else** (instance URLs, the GCP project) can also go in `.env`, which is
+  gitignored:
 
 ```bash
 cp .env.example .env   # then fill in the values for the servers you want
 ```
 
 `CONFLUENCE_URL` and `CONFLUENCE_TOKEN` are required for the Atlassian server, `JIRA_URL` and
-`JIRA_TOKEN` are optional, and tokens come from each system's own profile settings. A variable
-exported in your shell wins over `.env`. If your tokens already live in another file, point at
-it instead of making a second copy — one copy of a token is one thing to rotate and one thing
-to leak:
+`JIRA_TOKEN` are optional, and tokens come from each system's own profile settings. The
+Atlassian server speaks to **self-hosted** Jira and Confluence only, not `*.atlassian.net`
+Cloud sites. If a value is missing, `make mcp` says so and skips that one server rather than
+failing everything.
+
+The GitHub server also needs its program: `brew install github-mcp-server`. It reaches the
+repos of whichever token is in the shell, and a fine-grained token covers one owner. For
+several owners, keep one token per owner and pick it per folder with
+[direnv](https://direnv.net/), the token itself in the macOS keychain:
 
 ```bash
-make mcp ENV_FILE=../atlassian_agent/.env
-```
+security add-generic-password -a "$USER" -s github-myorg -w   # asks for the token
 
-The Atlassian server speaks to **self-hosted** Jira and Confluence only, not
-`*.atlassian.net` Cloud sites. If a value is missing, `make mcp` says so and skips that one
-server rather than failing everything.
+# ~/projects/myorg/.envrc — applies to every repo under it; run `direnv allow` once
+export GITHUB_PERSONAL_ACCESS_TOKEN=$(security find-generic-password -s github-myorg -w)
+export GH_TOKEN="$GITHUB_PERSONAL_ACCESS_TOKEN"   # gh follows the same token
+```
 
 ### Variables
 
@@ -106,32 +117,28 @@ To switch per folder, put `export CLOUDSDK_ACTIVE_CONFIG_NAME=proj-a` in an `.en
 [direnv](https://direnv.net/).
 
 **Everything else** is an environment variable. Set it in your shell (`~/.bashrc` or
-`~/.zshrc`), in a file your team shares and everyone sources from there, or in `.env` here
-for `make mcp`:
+`~/.zshrc`); the values that are not secrets can also go in `.env` here for `make mcp`:
 
 | Variable | Used by | What it is |
 | --- | --- | --- |
 | `GOOGLE_CLOUD_PROJECT` | BigQuery server | Overrides the gcloud project for `make mcp`; `GCP_PROJECT` also works |
-| `CONFLUENCE_URL`, `CONFLUENCE_TOKEN` | Atlassian server | Self-hosted Confluence base URL and personal access token |
+| `CONFLUENCE_URL`, `CONFLUENCE_TOKEN` | Atlassian server | Self-hosted Confluence base URL and personal access token (shell only) |
 | `JIRA_URL`, `JIRA_TOKEN` | Atlassian server | Optional, the same for Jira |
-| `GITHUB_PERSONAL_ACCESS_TOKEN` | GitHub server | Fine-grained token, scoped to the repos you use |
+| `GITHUB_PERSONAL_ACCESS_TOKEN` | GitHub server | Fine-grained token, scoped to the repos you use (shell only) |
 
-MCP servers keep the values they were registered with: after changing one, run
-`claude mcp remove <id> -s user` and `make mcp` again.
-
-`make mcp` is idempotent by design: it skips any server `claude mcp list` already shows,
-without reconfiguring it. That's a trap for "Confluence first, Jira later" — if you ran
-`make mcp` with only `CONFLUENCE_TOKEN` set, then export `JIRA_TOKEN` weeks later expecting
-it to be picked up, it won't be; `atlassian-agent` is already registered, so the new token
-never reaches it and every `jira_*` tool call fails with `Missing required environment
-variable: JIRA_TOKEN`. `make mcp` prints a `[note]` when this happens — a key that would
-now resolve but isn't part of the live registration — rather than silently reporting
-`already configured`. The fix is to re-register, not to re-check the token:
+MCP servers keep the non-secret values they were registered with, and `make mcp` skips any
+server that is already registered. After changing a URL or the GCP project, or to pick up
+an optional value you set later, re-register:
 
 ```bash
 claude mcp remove atlassian-agent -s user
 make mcp
 ```
+
+`make mcp` prints a `[note]` when a registration is out of date, including one that still
+has a token stored in it from before tokens were left to the shell. A stored token keeps
+being sent after it expires, and self-hosted Confluence answers an expired token as an
+anonymous user, so restricted pages look as if they do not exist.
 
 Then go to any project and work as normal. Nothing is per-project; it applies everywhere.
 

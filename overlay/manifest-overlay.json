@@ -24,7 +24,8 @@
     "ito-compute": "points at an unpublished package from the upstream author's company",
     "nexus": "upstream author's own infrastructure",
     "jira": "upstream's entry is mcp-atlassian in Cloud shape (JIRA_EMAIL + JIRA_API_TOKEN). A self-hosted Data Center instance authenticates with a personal access token instead. Leaving it in the catalog invites someone to put a Data Center credential into a server that cannot use it. Replaced by atlassian-agent.",
-    "confluence": "confluence-mcp-server is Atlassian Cloud only. atlassian-agent covers self-hosted Confluence as well as Jira."
+    "confluence": "confluence-mcp-server is Atlassian Cloud only. atlassian-agent covers self-hosted Confluence as well as Jira.",
+    "github": "upstream's entry runs @modelcontextprotocol/server-github, which npm marks deprecated and no longer supported (last release 2025.4.8). Replaced in addMcpServers by GitHub's own github-mcp-server under the same id."
   },
   "removeFiles": {
     "$comment": "Files deleted from the materialized .ecc/ tree before install. Modules install whole directories, so this is the only per-file lever. Every .md under ~/.claude/rules/ is loaded as an instruction in EVERY session by EVERY person — so a README living in that tree is documentation billed as always-on context. materialize.py fails loudly if a path listed here no longer exists, so an upstream rename cannot silently stop the removal.",
@@ -36,8 +37,7 @@
       "context7",
       "bigquery",
       "miro",
-      "atlassian-agent",
-      "github"
+      "atlassian-agent"
     ]
   },
   "addMcpServers": {
@@ -73,7 +73,19 @@
         "JIRA_URL",
         "JIRA_TOKEN"
       ],
-      "description": "Self-hosted Jira and Confluence. All four values are personal and come only from the environment or .env: $CONFLUENCE_URL and $JIRA_URL name the instances, $CONFLUENCE_TOKEN and $JIRA_TOKEN are personal access tokens. Nothing instance-specific lives in this repo. Jira is optional — with no Jira token the Confluence tools still work and the jira_* tools return a clear error, so JIRA_URL and JIRA_TOKEN are listed in optionalEnv and their absence is a note, not a failure. 13 tools: 7 marked read-only, 6 that write. Every write is a dry run returning a unified diff until a second, deliberate call passes apply=true, and Confluence updates carry the version that was read so a page edited in the meantime is refused rather than silently reverted. Installed from PyPI by uvx at a pinned version — no clone, no git SHA to chase. Source: github.com/danielvogler/atlassian_agent (MIT)."
+      "description": "Self-hosted Jira and Confluence. All four values are personal: $CONFLUENCE_URL and $JIRA_URL name the instances and may come from .env, $CONFLUENCE_TOKEN and $JIRA_TOKEN are personal access tokens that must be exported in your shell, because the server inherits them from it and they are never stored in the Claude config. Nothing instance-specific lives in this repo. Jira is optional — with no Jira token the Confluence tools still work and the jira_* tools return a clear error, so JIRA_URL and JIRA_TOKEN are listed in optionalEnv and their absence is a note, not a failure. 13 tools: 7 marked read-only, 6 that write. Every write is a dry run returning a unified diff until a second, deliberate call passes apply=true, and Confluence updates carry the version that was read so a page edited in the meantime is refused rather than silently reverted. Installed from PyPI by uvx at a pinned version — no clone, no git SHA to chase. Source: github.com/danielvogler/atlassian_agent (MIT)."
+    },
+    "github": {
+      "command": "github-mcp-server",
+      "args": [
+        "stdio",
+        "--toolsets",
+        "context,issues,projects,pull_requests"
+      ],
+      "personalEnv": [
+        "GITHUB_PERSONAL_ACCESS_TOKEN"
+      ],
+      "description": "GitHub issues, sub-issues, issue types, Projects boards and pull requests, as tool calls instead of hand-written gh and GraphQL. GitHub's own server (github.com/github/github-mcp-server, MIT), checked against v1.14.0. Not activated by default: gh already covers this for most people, and every activated server loads its tool descriptions into every session. Opt in with `make mcp ADD=github`. Needs the github-mcp-server binary on PATH (brew install github-mcp-server, or a release binary) and $GITHUB_PERSONAL_ACCESS_TOKEN exported in your shell; the server inherits it, nothing is stored in the Claude config. A fine-grained token covers one owner, so the token in the shell you start Claude Code from decides which owner's repos it reaches. The toolsets are limited to context, issues, projects and pull_requests to keep the context cost down; repos, actions, rulesets and the rest stay with gh, as do deleting an issue and linking a repo to a project, which the server has no tool for. Bulk edits stay cheaper as one gh script than as one tool call per item."
     }
   },
   "addModules": [

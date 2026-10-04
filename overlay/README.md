@@ -55,6 +55,7 @@ rather than silently activating nothing.
 ```bash
 make mcp                                  # uses your ambient gcloud project
 make mcp GCP_PROJECT=my-project           # or name it explicitly
+make mcp ADD=github                       # also an opt-in server from the catalog
 python3 tools/mcp-setup.py --dry-run      # see the commands without running them
 ```
 

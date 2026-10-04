@@ -96,9 +96,10 @@ conventions: ## Regenerate the team-conventions skill from custom/rules/
 setup-user: ## Turn the shared config on for you: permissions, 2 hooks, no AI attribution, conventions for codex/opencode
 	@python3 tools/setup-user.py
 
-mcp: ## Activate the agreed MCP servers: make mcp [GCP_PROJECT=x] [ENV_FILE=path]
+mcp: ## Activate the agreed MCP servers: make mcp [ADD=github] [GCP_PROJECT=x] [ENV_FILE=path]
 	@GCP_PROJECT="$(GCP_PROJECT)" python3 tools/mcp-setup.py \
-		$(if $(ENV_FILE),--env-file "$(ENV_FILE)",)
+		$(if $(ENV_FILE),--env-file "$(ENV_FILE)",) \
+		$(if $(ADD),--add "$(ADD)",)
 
 # The gate CI runs, runnable locally in one word. Same commands, same order, so a green
 # `make check` means a green PR. The one CI job not here is the gitleaks scan of the full
