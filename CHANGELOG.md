@@ -9,16 +9,21 @@ library with an API.
 
 ## [Unreleased]
 
-- Fixed: a file dropped from `custom/` (a removed command or skill) stayed installed and
-  discoverable forever, and `make doctor` reported it as a harmless "stale install-state
-  record ignored" even while it was still on disk. `make doctor` now warns and names the
-  file instead. Separately, `make reinstall` removed such a file but never cleared its
-  bookkeeping record, because uninstall keeps the whole install-state file whenever
-  anything was retained (it always retains `settings.json`, which `setup-user.py` edits
-  on purpose) — so the same stale record kept being reported forever after. `make
-  setup-user` now prunes any install-state record whose destination file is confirmed
-  gone, right after its own edits, on every install/update/reinstall. See UPSTREAM.md,
-  "Uninstall never fully clears install-state, so dropped files stay reported forever".
+## [v0.2.0] — 2026-10-04
+
+Run `make update`, then `make mcp`. If `make mcp` prints a `[note]` about a stored token,
+follow it: remove that server and run `make mcp` again.
+
+- `make mcp` no longer writes tokens into the Claude config. Servers inherit them from the
+  shell Claude Code starts in, so a rotated token takes effect on the next start instead
+  of being overridden by an expired stored copy. A token found only in `.env` is refused.
+- GitHub uses GitHub's own `github-mcp-server` instead of the deprecated npm package, and
+  is opt-in: `brew install github-mcp-server && make mcp ADD=github`.
+- atlassian-agent 0.4.0, installed from PyPI at a pinned version.
+- `make doctor` no longer warns when no MCP server is active; that is a valid choice. It
+  does warn about a file dropped from `custom/` that is still installed, and names it.
+- Install-state records for files no longer on disk are pruned on every install, so
+  `make doctor` stops reporting them forever after a `make reinstall`.
 
 ## [v0.1.0] — 2026-09-25
 
@@ -36,5 +41,6 @@ First public release.
   every `v*` tag.
 - Vendored skills ship with their licenses in `THIRD_PARTY_LICENSES/`.
 
-[Unreleased]: https://github.com/danielvogler/agent-harness-config/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/danielvogler/agent-harness-config/compare/v0.2.0...HEAD
+[v0.2.0]: https://github.com/danielvogler/agent-harness-config/compare/v0.1.0...v0.2.0
 [v0.1.0]: https://github.com/danielvogler/agent-harness-config/releases/tag/v0.1.0
