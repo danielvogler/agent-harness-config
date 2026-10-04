@@ -17,7 +17,12 @@ Four checks, cheapest first:
   3. Repo staleness — how far behind origin/main this checkout is, plus which
                       release tag you are on.
   4. File drift     — delegated to upstream's own `scripts/doctor.js`, which
-                      compares every managed file against its source.
+                      compares every managed file against its source. A record for a
+                      file dropped from the current config (not upstream drift) is
+                      split out from this: confirmed gone is a silent ok — it is what
+                      `make setup-user` prunes on its next run — but still present on
+                      disk is reported, since that file is still an active command or
+                      skill nobody chose to keep (issue #3).
 
 Locating install-state files is delegated to upstream's doctor too, so the paths
 live in one place (upstream's adapters) rather than being hardcoded here and
@@ -66,7 +71,19 @@ SETUP_USER_CODES = ("missing-managed-files", "drifted-managed-files")
 # current plan no longer contains them, so a file dropped upstream is reported missing
 # or drifted forever and no reinstall clears it. A path the installer would not write at
 # this pin is such a record, not drift. `make` installs with this profile.
+#
+# "Stale" only says the record is not part of the current plan — it says nothing about
+# whether the file itself is still on disk. missing-managed-files' paths are confirmed
+# gone (that is what "missing" means upstream), so those stay a silent ok: `make
+# setup-user` prunes the record itself on the next run, via tools/setup-user.py's
+# prune_stale_install_state. drifted-managed-files' paths always still exist (drift is
+# only checked once existence is confirmed), and missing-source-files' paths need a
+# lookup back to their operation's destination to know either way — see
+# build_destination_lookup and partition_stale. Either of those can turn out to be a
+# file that is genuinely still installed, which is not a silent ok: see point 1 of
+# https://github.com/danielvogler/agent-harness-config/issues/3.
 STALE_CODES = ("missing-managed-files", "drifted-managed-files", "missing-source-files")
+
 PROFILE = "custom"
 
 OK, WARN, ERR = "ok", "warning", "error"
@@ -487,6 +504,60 @@ class FileContext:
         return self._plans[target]
 
 
+def build_destination_lookup(states: list[tuple[Path, dict]]) -> dict[str, dict[str, str]]:
+    """short target name -> {a path a doctor issue might report -> its destination}.
+
+    Keyed by state.target.target ("claude"), not state.target.id ("claude-home"): that
+    is the short name upstream's adapter report also uses (report_issue's `target`
+    parameter, also what ctx.plan() takes), so a lookup here has to match it or every
+    call silently misses.
+
+    missing-managed-files and drifted-managed-files report the destination path
+    directly, so they already are their own key here. missing-source-files reports the
+    *source* instead — the file inside the gitignored, ephemeral .ecc/ that the
+    operation would copy from — which says nothing about whether the installed copy is
+    still on disk. Both are recorded so partition_stale can look up the one path that
+    actually answers that: the destination.
+    """
+    lookup: dict[str, dict[str, str]] = {}
+    for _, state in states:
+        target_id = state.get("target", {}).get("target")
+        if not target_id:
+            continue
+        bucket = lookup.setdefault(target_id, {})
+        for operation in state.get("operations", []):
+            destination = operation.get("destinationPath")
+            if not destination:
+                continue
+            bucket[destination] = destination
+            source_rel = operation.get("sourceRelativePath")
+            if source_rel:
+                bucket[str((ECC / source_rel).resolve())] = destination
+    return lookup
+
+
+def partition_stale(
+    stale: list[Path], target: str, destinations: dict[str, dict[str, str]]
+) -> tuple[list[Path], list[Path]]:
+    """Split stale records into (destination confirmed gone, destination still present).
+
+    settings.json and AGENTS.md are excluded from "still present": setup-user.py rewrites
+    them every run, they always exist, and they are never actually a dropped command or
+    skill — that combination is already reported by the SETUP_USER_CODES/SETUP_USER_FILES
+    path above, and treating it here too would just be a second, wrong-shaped warning.
+    """
+    bucket = destinations.get(target, {})
+    gone: list[Path] = []
+    present: list[Path] = []
+    for path in stale:
+        if path.name in SETUP_USER_FILES:
+            gone.append(path)
+            continue
+        destination = Path(bucket.get(str(path), path))
+        (present if destination.exists() else gone).append(path)
+    return gone, present
+
+
 def split_issue(issue: dict, target: str, ctx: FileContext) -> tuple[list, list, list]:
     """Divide an issue's paths into (stale records, setup-user's edits, real drift)."""
     code = issue.get("code")
@@ -507,15 +578,28 @@ def split_issue(issue: dict, target: str, ctx: FileContext) -> tuple[list, list,
     return stale, ours, rest
 
 
-def report_issue(adapter: str, issue: dict, target: str, ctx: FileContext) -> None:
+def report_issue(
+    adapter: str,
+    issue: dict,
+    target: str,
+    ctx: FileContext,
+    destinations: dict[str, dict[str, str]],
+) -> None:
     status = ERR if issue.get("severity") == "error" else WARN
     if not issue.get("paths"):
         note(status, f"{adapter}: {issue.get('message')}", "")
         return
 
     stale, ours, rest = split_issue(issue, target, ctx)
-    for path in stale:
+    gone, present = partition_stale(stale, target, destinations)
+    for path in gone:
         note(OK, f"{adapter}: stale install-state record ignored: {path.name}")
+    for path in present:
+        note(
+            WARN,
+            f"{adapter}: {path.name} was dropped from the config but is still installed",
+            "run `make reinstall` to clear files the current config no longer ships",
+        )
     if ours:
         names = ", ".join(p.name for p in ours)
         note(OK, f"{adapter}: {names} changed by setup-user.py, as intended")
@@ -530,7 +614,7 @@ def report_issue(adapter: str, issue: dict, target: str, ctx: FileContext) -> No
     note(status, f"{adapter}: {len(rest)} {message}: {names}", "")
 
 
-def check_files(report: dict | None) -> None:
+def check_files(report: dict | None, states: list[tuple[Path, dict]] = ()) -> None:
     if report is None:
         note(
             WARN,
@@ -539,6 +623,7 @@ def check_files(report: dict | None) -> None:
         )
         return
     ctx = FileContext()
+    destinations = build_destination_lookup(states)
     for result in report.get("results", []):
         adapter = result["adapter"]["id"]
         target = result["adapter"].get("target", adapter.split("-")[0])
@@ -547,7 +632,7 @@ def check_files(report: dict | None) -> None:
             note(OK, f"{adapter}: managed files intact")
             continue
         for issue in issues:
-            report_issue(adapter, issue, target, ctx)
+            report_issue(adapter, issue, target, ctx, destinations)
 
 
 def main() -> int:
@@ -584,7 +669,7 @@ def main() -> int:
     check_hooks(states)
     check_mcp()
     check_repo()
-    check_files(report)
+    check_files(report, states)
 
     print(f"agent-harness-config doctor — pin {pinned[:8]}\n")
     for status, headline, advice in findings:

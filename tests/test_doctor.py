@@ -638,6 +638,186 @@ class TestStaleRecords:
         assert paths is None
 
 
+def install_operation(kind: str, source_relative: str, destination: Path) -> dict:
+    return {
+        "kind": kind,
+        "moduleId": "some-module",
+        "sourceRelativePath": source_relative,
+        "destinationPath": str(destination),
+    }
+
+
+class TestStaleRecordsStillInstalled:
+    """A stale record (dropped from the current plan) can point at a file that is
+    either confirmed gone (silent ok, self-heals via setup-user's prune) or still on
+    disk (a real, actionable finding — see issue #3)."""
+
+    @pytest.fixture(autouse=True)
+    def stale(self, doctor, monkeypatch):
+        monkeypatch.setattr(doctor, "planned_paths", lambda target: {"/somewhere/else.md"})
+
+    def states_for(self, home: Path, ecc: Path, destination: Path, kind="copy-file") -> list:
+        source_relative = "scripts/lib/cost-estimate.js"
+        return [
+            (
+                home / ".claude" / "ecc" / "install-state.json",
+                {
+                    "target": {"id": "claude-home", "target": "claude"},
+                    "operations": [install_operation(kind, source_relative, destination)],
+                },
+            )
+        ]
+
+    def report_for(self, source_path: Path, code: str, message: str) -> dict:
+        return {
+            "results": [
+                {
+                    "adapter": {"id": "claude-home", "target": "claude"},
+                    "issues": [
+                        {
+                            "severity": "error",
+                            "code": code,
+                            "message": message,
+                            "paths": [str(source_path)],
+                        }
+                    ],
+                }
+            ]
+        }
+
+    def test_warns_when_a_dropped_source_file_is_still_installed(
+        self, doctor, tmp_path, monkeypatch
+    ):
+        # Arrange
+        home = tmp_path / "home"
+        ecc = tmp_path / ".ecc"
+        monkeypatch.setattr(doctor, "ECC", ecc)
+        destination = home / ".claude" / "scripts" / "lib" / "cost-estimate.js"
+        destination.parent.mkdir(parents=True)
+        destination.write_text("x\n")
+        source_path = ecc / "scripts" / "lib" / "cost-estimate.js"
+        report = self.report_for(
+            source_path,
+            "missing-source-files",
+            "1 source file(s) referenced by install-state are missing",
+        )
+        states = self.states_for(home, ecc, destination)
+
+        # Act
+        doctor.check_files(report, states)
+
+        # Assert
+        assert doctor.findings == [
+            (
+                doctor.WARN,
+                "claude-home: cost-estimate.js was dropped from the config but is still installed",
+                "run `make reinstall` to clear files the current config no longer ships",
+            )
+        ]
+
+    def test_stays_a_silent_ok_when_the_dropped_file_is_gone(self, doctor, tmp_path, monkeypatch):
+        # Arrange
+        home = tmp_path / "home"
+        ecc = tmp_path / ".ecc"
+        monkeypatch.setattr(doctor, "ECC", ecc)
+        destination = home / ".claude" / "scripts" / "lib" / "cost-estimate.js"  # never created
+        source_path = ecc / "scripts" / "lib" / "cost-estimate.js"
+        report = self.report_for(
+            source_path,
+            "missing-source-files",
+            "1 source file(s) referenced by install-state are missing",
+        )
+        states = self.states_for(home, ecc, destination)
+
+        # Act
+        doctor.check_files(report, states)
+
+        # Assert
+        assert doctor.findings == [
+            (doctor.OK, "claude-home: stale install-state record ignored: cost-estimate.js", "")
+        ]
+
+    def test_warns_for_a_dropped_but_drifted_file_since_drift_implies_it_exists(
+        self, doctor, tmp_path, monkeypatch
+    ):
+        # Arrange
+        home = tmp_path / "home"
+        ecc = tmp_path / ".ecc"
+        monkeypatch.setattr(doctor, "ECC", ecc)
+        destination = home / ".claude" / "commands" / "dropped.md"
+        destination.parent.mkdir(parents=True)
+        destination.write_text("drifted content\n")
+        report = self.report_for(
+            destination, "drifted-managed-files", "1 managed file(s) differ from the source repo"
+        )
+        states = self.states_for(home, ecc, destination)
+
+        # Act
+        doctor.check_files(report, states)
+
+        # Assert
+        assert doctor.findings == [
+            (
+                doctor.WARN,
+                "claude-home: dropped.md was dropped from the config but is still installed",
+                "run `make reinstall` to clear files the current config no longer ships",
+            )
+        ]
+
+    def test_never_flags_settings_json_or_agents_md_as_still_installed(
+        self, doctor, tmp_path, monkeypatch
+    ):
+        # Arrange — always rewritten by setup-user.py, never actually a dropped
+        # command or skill; already reported by the SETUP_USER_CODES path above.
+        home = tmp_path / "home"
+        ecc = tmp_path / ".ecc"
+        monkeypatch.setattr(doctor, "ECC", ecc)
+        monkeypatch.setattr(doctor, "setup_user_applied", lambda: False)
+        destination = home / ".claude" / "settings.json"
+        destination.parent.mkdir(parents=True)
+        destination.write_text("{}\n")
+        report = self.report_for(
+            destination, "missing-managed-files", "1 managed file(s) are missing"
+        )
+        states = self.states_for(home, ecc, destination)
+
+        # Act
+        doctor.check_files(report, states)
+
+        # Assert
+        assert doctor.findings == [
+            (doctor.OK, "claude-home: stale install-state record ignored: settings.json", "")
+        ]
+
+    def test_build_destination_lookup_resolves_source_relative_paths_against_ecc(
+        self, doctor, tmp_path, monkeypatch
+    ):
+        # Arrange
+        ecc = tmp_path / ".ecc"
+        monkeypatch.setattr(doctor, "ECC", ecc)
+        destination = tmp_path / "home" / ".claude" / "commands" / "dropped.md"
+        states = [
+            (
+                Path("unused"),
+                {
+                    "target": {"id": "claude-home", "target": "claude"},
+                    "operations": [
+                        install_operation("copy-file", "commands/dropped.md", destination)
+                    ],
+                },
+            )
+        ]
+
+        # Act
+        lookup = doctor.build_destination_lookup(states)
+
+        # Assert
+        assert lookup["claude"][str(destination)] == str(destination)
+        assert lookup["claude"][str((ecc / "commands" / "dropped.md").resolve())] == str(
+            destination
+        )
+
+
 class TestLegacyOpencodeState:
     def test_drops_legacy_state_and_warns_when_a_current_one_exists(
         self, doctor, tmp_path, monkeypatch

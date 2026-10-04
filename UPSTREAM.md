@@ -430,6 +430,48 @@ Until it is wired:
 - The audit recorded below under "Not adopted" that concluded hooks were safe to enable
   was an audit of what the hooks *do*, not of whether they run.
 
+### Uninstall never fully clears install-state, so dropped files stay reported forever
+
+**Found 2026-09, fixed in this repo rather than reported upstream — see below.**
+
+A file dropped from `custom/` (a command or skill this repo no longer ships) used to
+survive indefinitely in two ways at once:
+
+1. **`make install` never removes it.** The installer only adds and overwrites what the
+   current plan selects; a file no longer in the plan just stays on disk, still
+   discoverable as a command or skill, with `make doctor` reporting it as a harmless
+   `stale install-state record ignored` — true only if the file is actually gone, which
+   this case is not.
+2. **`make reinstall` (uninstall, then install) doesn't clear the bookkeeping either.**
+   `uninstallInstalledStates` in `scripts/lib/install-lifecycle.js` only deletes the
+   whole install-state file when *nothing* was retained, and it always retains
+   `settings.json` — `setup-user.py` edits it on purpose, so upstream's
+   content-digest check always finds it "modified" and preserves it together with the
+   *entire* install-state file, stale records and all. Every file the same uninstall run
+   legitimately removed stays recorded, so `make doctor` reports the identical "stale,
+   ignored" line on every run after, forever. No `make reinstall` ever clears it.
+
+**Not filed upstream.** The all-or-nothing retention is arguably correct as written —
+preserving unrelated bookkeeping alongside one genuinely-modified file is the safe
+default for an installer that also has to run against a `.claude` no one has ever
+customised — so this is a design tradeoff, not an obvious bug, and not worth a report on
+that basis alone.
+
+**Fixed here instead**, in two parts:
+
+- `tools/setup-user.py`'s `prune_stale_install_state`, run once per
+  install/update/reinstall right after this script's own edits, drops exactly the
+  operation records whose destination file is confirmed gone from disk. It never
+  touches a record for a file that is still there, and it leaves merge-json,
+  update-claude-settings and `remove` operations alone — a missing destination means
+  something different for each of those.
+- `tools/doctor.py`'s `check_files` no longer treats every record dropped from the
+  current plan as an equally silent `ok`. It now checks whether the record's
+  destination is still on disk: confirmed gone stays a silent `ok` (it self-heals on the
+  next `make setup-user` run); still present is now a `warn` naming the file, with
+  `make reinstall` as the advice — because that file is still an active, discoverable
+  command or skill nobody chose to keep.
+
 ### AgentShield has no custom-rule mechanism — the templates folder was fiction
 
 `custom/agentshield-templates/` existed on the premise, taken from the build draft, that

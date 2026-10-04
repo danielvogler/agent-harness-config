@@ -463,7 +463,7 @@ After `make install`, in `~/.claude/` (other harnesses get the subset in the tab
 | `commands/` | `/agent-frameworks`, upstream's | when you type the name |
 | `agents/` | subagent definitions | when a subagent is spawned |
 | `hooks/hooks.json` | the 21-matcher registry | never — **currently inert**, see below |
-| `ecc/install-state.json` | every file the installer wrote | by `make uninstall` and `make doctor` |
+| `ecc/install-state.json` | every file the installer wrote | by `make uninstall` and `make doctor`; pruned of records for files no longer on disk by `make setup-user` |
 
 In this repo, the mirror of that is `custom/<kind>/` — add a file there and it fans out to
 all five harnesses on the next `make update`.

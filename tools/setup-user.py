@@ -5,7 +5,7 @@
 "read the docs and paste this", which means two people do them and everyone else does
 not — and then the team is not working the same way, which is the whole point.
 
-This does all four:
+This does all five:
 
   1. Permission allow + deny lists in ~/.claude/settings.json. The allow list stops the
      prompts on read-only commands. The deny list is the only thing the client enforces
@@ -18,6 +18,13 @@ This does all four:
      it. AGENTS.md is read every time, which is what Claude gets from rules.
   4. Claude Code's commit and PR attribution, turned off. Commits and PRs are authored
      by the person whose name is on them (custom/rules/git.md).
+  5. Install-state bookkeeping, pruned for any managed file that is no longer on disk.
+     Upstream's uninstall only deletes the whole install-state file when nothing was
+     retained, and it always retains settings.json (this script modifies it on purpose),
+     so a plain uninstall/reinstall never actually clears the file — every file it did
+     remove stays recorded, and `make doctor` reports it as a stale record forever.
+     Pruning here, right after install/update/reinstall finish writing real files, is
+     what stops that.
 
 Everything is idempotent, backed up, and reversible. Not part of `make install` on
 purpose: it writes to your own config, which `make uninstall` cannot reverse.
@@ -39,6 +46,12 @@ CONVENTIONS = REPO / "custom" / "skills" / "team-conventions" / "SKILL.md"
 # Written once setup-user has been applied, so install/update/reinstall can tell the
 # difference between "never set up" and "set up, then clobbered by the installer".
 STAMP = HOME / ".claude" / "ecc" / "setup-user.stamp"
+
+# A missing destination only means "the file ECC once wrote is gone" for these two
+# kinds. merge-json and update-claude-settings target a shared file (settings.json)
+# that is expected to always exist; a 'remove' operation records something that should
+# NOT exist, so a missing destination there is success, not staleness.
+PRUNABLE_OPERATION_KINDS = ("copy-file", "render-template")
 
 # Claude Code otherwise adds a Co-Authored-By trailer to every commit and a "Generated
 # with Claude Code" line to every PR description. Empty strings turn both off. A repo
@@ -308,6 +321,70 @@ def setup_conventions(dry: bool) -> None:
             path.write_text(updated)
 
 
+def install_state_paths() -> tuple[Path, ...]:
+    """Every install-state file `make install`'s three home targets can produce.
+
+    Kept in sync with tools/doctor.py's KNOWN_STATE_PATHS by hand, not by import — each
+    tools/ script stays runnable on its own, and this list changes only if ECC adds a
+    target. A function, not a module-level constant, so it re-reads HOME on every call —
+    the tests point HOME at a temp directory, and a constant computed at import time
+    would miss that.
+    """
+    return (
+        HOME / ".claude" / "ecc" / "install-state.json",
+        HOME / ".codex" / "ecc-install-state.json",
+        HOME / ".config" / "opencode" / "ecc-install-state.json",
+        HOME / ".opencode" / "ecc-install-state.json",
+    )
+
+
+def prune_stale_install_state(dry: bool) -> None:
+    """Drop install-state records whose destination file no longer exists on disk.
+
+    Uninstall retains a managed file it thinks was modified rather than deleting it,
+    and settings.json is always "modified" here (setup_hooks/setup_attribution edit it
+    on purpose) — so uninstalling a target is never fully clean, and it keeps the
+    *entire* install-state file, stale records and all, rather than just the one entry
+    it actually had a reason to keep. A file genuinely removed by that uninstall (or by
+    hand) then gets reported by `make doctor` as "stale install-state record ignored"
+    on every run after, forever, because nothing ever drops the record itself.
+
+    This runs after this script's own edits, once per install/update/reinstall, and
+    removes exactly the records whose destination is confirmed gone — never a file
+    that is still there (see check_files in tools/doctor.py for that case, which is
+    reported instead of silently ignored).
+    """
+    for path in install_state_paths():
+        if not path.exists():
+            continue
+        try:
+            state = json.loads(path.read_text())
+        except json.JSONDecodeError:
+            skipped.append(f"install-state: {path} is not valid JSON, left alone")
+            continue
+
+        kept, pruned = [], []
+        for operation in state.get("operations", []):
+            destination = operation.get("destinationPath")
+            is_prunable = (
+                operation.get("kind") in PRUNABLE_OPERATION_KINDS
+                and destination
+                and not Path(destination).exists()
+            )
+            (pruned if is_prunable else kept).append(operation)
+
+        if not pruned:
+            continue
+
+        names = ", ".join(Path(op["destinationPath"]).name for op in pruned)
+        changes.append(
+            f"install-state: pruned {len(pruned)} stale record(s) from {path.name} ({names})"
+        )
+        if not dry:
+            backup(path)
+            path.write_text(json.dumps({**state, "operations": kept}, indent=2) + "\n")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dry-run", action="store_true", help="show changes, write nothing")
@@ -348,6 +425,7 @@ def main() -> int:
     setup_attribution(args.dry_run)
     setup_hooks(args.dry_run)
     setup_conventions(args.dry_run)
+    prune_stale_install_state(args.dry_run)
 
     verb = "would change" if args.dry_run else "changed"
     print(f"{verb}:")
