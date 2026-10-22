@@ -9,6 +9,10 @@ library with an API.
 
 ## [Unreleased]
 
+- No emoji in commit messages, in any repo. `make setup-user` wires a third guard,
+  `block-commit-emoji`, that refuses such a commit, and repos get a matching commit-msg
+  hook to copy. Run `make setup-user` again after updating.
+
 ## [v0.2.0] — 2026-10-04
 
 Run `make update`, then `make mcp`. If `make mcp` prints a `[note]` about a stored token,

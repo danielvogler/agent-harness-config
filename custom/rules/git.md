@@ -2,8 +2,8 @@
 
 Add a scope: `fix(storage): ...`, not `fix: ...`. The scope is the area touched.
 
-Emoji: some repos use gitmoji, most do not. Match the repo you are in; do not introduce it
-to a repo that has none.
+No emoji in a commit message, in any repo, gitmoji repos included. The type and scope
+already say what an emoji would. A Claude Code hook and the repo's commit-msg hook refuse it.
 
 ## Shape of a message
 

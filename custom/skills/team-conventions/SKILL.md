@@ -118,8 +118,8 @@ Where a data-residency requirement applies, it decides; check before assuming it
 
 Add a scope: `fix(storage): ...`, not `fix: ...`. The scope is the area touched.
 
-Emoji: some repos use gitmoji, most do not. Match the repo you are in; do not introduce it
-to a repo that has none.
+No emoji in a commit message, in any repo, gitmoji repos included. The type and scope
+already say what an emoji would. A Claude Code hook and the repo's commit-msg hook refuse it.
 
 ### Shape of a message
 
@@ -333,8 +333,8 @@ detect-private-key), `uv-lock`, `gitleaks`.
 mypy runs as a **`local`** hook (`entry: uv run mypy`) — the upstream mirror runs isolated,
 can't see project deps, and invents import errors.
 
-Add a `commit-msg` pygrep hook rejecting AI attribution (`Co-Authored-By` trailers and
-"Generated with" lines), a PR workflow that runs the same hook on the PR description (copy
+Add `commit-msg` pygrep hooks rejecting AI attribution (`Co-Authored-By` trailers and
+"Generated with" lines) and emoji (copy both from the harness repo), a PR workflow that runs the same hook on the PR description (copy
 `pr-description.yml` from the harness repo), and a hook rejecting `"type": "service_account"`
 in JSON.
 
@@ -345,4 +345,4 @@ in JSON.
 
 ---
 
-Rules that must *block* rather than advise are not here — a skill cannot enforce. Those live in `.pre-commit-config.yaml` in each repo, and in the two hooks described in `UPSTREAM.md`.
+Rules that must *block* rather than advise are not here — a skill cannot enforce. Those live in `.pre-commit-config.yaml` in each repo, and in the hooks `make setup-user` wires (`tools/setup-user.py`).
