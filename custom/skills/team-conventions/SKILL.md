@@ -346,9 +346,9 @@ mypy runs as a **`local`** hook (`entry: uv run mypy`) — the upstream mirror r
 can't see project deps, and invents import errors.
 
 Add `commit-msg` pygrep hooks rejecting AI attribution (`Co-Authored-By` trailers and
-"Generated with" lines) and emoji (copy both from the harness repo), a PR workflow that runs the same hook on the PR description (copy
-`pr-description.yml` from the harness repo), and a hook rejecting `"type": "service_account"`
-in JSON.
+"Generated with" lines) and emoji, a PR workflow that runs the attribution hook on the PR
+description, and a hook rejecting `"type": "service_account"` in JSON. Copy the hooks and
+`pr-description.yml` from the harness repo.
 
 ### Also at the root
 
