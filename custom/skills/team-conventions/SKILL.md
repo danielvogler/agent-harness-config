@@ -148,26 +148,16 @@ Never name an agent, model, tool or session, and **never add AI attribution** â€
 `Co-Authored-By` trailer for a tool and no "Generated with ..." line, in a commit message or
 in a PR description. Commits and PRs are authored by the person whose name is on them.
 
-Where it is enforced, so do not work around any of it:
-
-- `make setup-user` turns Claude Code's own attribution off (`attribution` in
-  `~/.claude/settings.json`), so it is not generated in the first place.
-- A `commit-msg` hook rejects it in commit messages, and a PR check runs the same hook on the
-  PR description.
-
-A repo that wants attribution opts back in: `attribution` in its own `.claude/settings.json`
-overrides the user setting, and it leaves out the hook and the PR check.
+`make setup-user` turns Claude Code's attribution off, and a `commit-msg` hook plus a PR
+check reject it; do not work around either. A repo that wants it back sets `attribution`
+in its own `.claude/settings.json` and leaves out the hook and the check.
 
 ### Never commit an absolute path
 
-Not in the message, not in code, not in a committed `.agent/` or `.claude/` file.
-
-- Wrong: ``Updated `/Users/an/git/projects/backend/scripts/import.js` ``
-- Right: ``Updated `import.js` `` or ``Fixed `backend/scripts/provision.js` ``
-
-`/Users/<someone>/...` breaks for everyone else and for CI the moment it is shared, and in
-a commit message it survives forever. If one is genuinely unavoidable in code, ask first
-and leave a comment above it saying why.
+Not in the message, not in code, not in a committed `.agent/` or `.claude/` file. Write
+`backend/scripts/import.js`, never `/Users/<someone>/...`: that breaks for everyone else and
+for CI, and in a commit message it survives forever. If one is unavoidable in code, ask
+first and leave a comment above it saying why.
 
 ### Staging and history
 
@@ -178,6 +168,13 @@ and leave a comment above it saying why.
   and wait. Prefer a squash that leaves the tree untouched.
 - **Never rewrite history that is already pushed** to a shared branch.
 - Commit or push only when asked. If on the default branch, branch first.
+- **Regroup before the pull request:** one commit per logical change, before the push.
+
+### Pushing
+
+The person's setup decides which credential pushes where. Before the first push, run
+`git push --dry-run`; if it is refused, give the person the exact push command and open the
+pull request once they have pushed. Never switch remote URL, protocol, token or SSH key.
 
 ### Filing an issue via API or MCP
 
