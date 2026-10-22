@@ -71,6 +71,8 @@ is paste a Data Center credential into a server that cannot use it.
 | `bigquery` | stdio, `npx` | BigQuery in one GCP project | Application Default Credentials | `BIGQUERY_READONLY` and a 1 GB `BIGQUERY_MAXIMUM_BYTES_BILLED` are set **at the server**, not left to the agent. A runaway query errors instead of invoicing. |
 | `miro` | remote HTTP, `https://mcp.miro.com/` | Miro boards | OAuth in the browser; nothing stored locally | Every board the authenticating Miro account can see. On a shared team account that is all of them. Miro operates the server, so board content transits their infrastructure — which it already does. |
 | `atlassian-agent` | stdio, `uvx` from PyPI | whatever `$JIRA_URL` / `$CONFLUENCE_URL` name; no defaults | Personal access tokens, read from `$JIRA_TOKEN` and `$CONFLUENCE_TOKEN` | Everything your account can read in Jira and Confluence — including other people's tickets, and anything anyone has pasted into a wiki page. 22 tools, 13 marked read-only. Writes are dry runs returning a unified diff until a second call passes `apply=true`, and Confluence updates carry the version that was read, so a page edited in between is refused rather than silently reverted. |
+| `serena` | stdio, `uvx` from a pinned git tag | the working tree of the repository Claude Code was started in (`--project-from-cwd`), through a language server | none | Reads and edits files, which the harness does anyway. A language server per language is downloaded by Serena on first use. GPL-3.0-or-later application, MIT SolidLSP; a separate process. |
+| `chrome-devtools` | stdio, `npx` | a Chrome it starts itself, and any page the agent opens in it | none | Whatever the agent browses to, with the console and network of that page. A fresh profile: your own logged-in Chrome is not touched. |
 
 Tool counts and description sizes in this table are measured from each server's own
 `tools/list` over a real MCP handshake, not read off a README. `@google-cloud/mcp-toolbox-bigquery`
@@ -91,6 +93,15 @@ code; it lets `atlassian-python-api` resolve to 5.x.
 The tokens are per-person and must never be committed, so the catalog names them in
 `personalEnv` without a value. `mcp-setup.py` checks they are exported and then leaves them
 out of the registration; see [secrets stay in the shell](#secrets-stay-in-the-shell).
+
+### `serena` and `chrome-devtools`, added 2026-10-22
+
+Both come from the integrations the field guide names for a coding agent: symbol-level
+navigation for large codebases, and a browser the agent can see. Neither needs a credential,
+so neither has a `personalEnv`. `serena` is pinned to a release tag because the project is
+not on PyPI; bumping it is an edit to the overlay after reading the release notes, like the
+others. `chrome-devtools` sits beside upstream's `playwright` entry rather than replacing it:
+DevTools is for looking at a page, Playwright for scripting a test against it.
 
 ### `github`, replaced 2026-10-04 — GitHub's own server, opt-in
 

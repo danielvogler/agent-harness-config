@@ -37,7 +37,9 @@
       "context7",
       "bigquery",
       "miro",
-      "atlassian-agent"
+      "atlassian-agent",
+      "serena",
+      "chrome-devtools"
     ]
   },
   "addMcpServers": {
@@ -68,7 +70,12 @@
       "args": [
         "atlassian-agent-mcp@0.4.0"
       ],
-      "personalEnv": ["CONFLUENCE_URL", "CONFLUENCE_TOKEN", "JIRA_URL", "JIRA_TOKEN"],
+      "personalEnv": [
+        "CONFLUENCE_URL",
+        "CONFLUENCE_TOKEN",
+        "JIRA_URL",
+        "JIRA_TOKEN"
+      ],
       "optionalEnv": [
         "JIRA_URL",
         "JIRA_TOKEN"
@@ -86,6 +93,29 @@
         "GITHUB_PERSONAL_ACCESS_TOKEN"
       ],
       "description": "GitHub issues, sub-issues, issue types, Projects boards and pull requests, as tool calls instead of hand-written gh and GraphQL. GitHub's own server (github.com/github/github-mcp-server, MIT), checked against v1.14.0. Not activated by default: gh already covers this for most people, and every activated server loads its tool descriptions into every session. Opt in with `make mcp ADD=github`. Needs the github-mcp-server binary on PATH (brew install github-mcp-server, or a release binary) and $GITHUB_PERSONAL_ACCESS_TOKEN exported in your shell; the server inherits it, nothing is stored in the Claude config. A fine-grained token covers one owner, so the token in the shell you start Claude Code from decides which owner's repos it reaches. The toolsets are limited to context, issues, projects and pull_requests to keep the context cost down; repos, actions, rulesets and the rest stay with gh, as do deleting an issue and linking a repo to a project, which the server has no tool for. Bulk edits stay cheaper as one gh script than as one tool call per item."
+    },
+    "serena": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena@v2.1.0",
+        "serena",
+        "start-mcp-server",
+        "--context",
+        "claude-code",
+        "--project-from-cwd",
+        "--open-web-dashboard",
+        "false"
+      ],
+      "description": "Symbol-level navigation and edits through a language server: find a symbol, its references, replace a function body, insert after a symbol. Replaces grep-and-read in a large codebase, where whole files fill the context. --project-from-cwd activates the repository Claude Code was started in, so one user-scoped entry serves every project; the claude-code context leaves out the tools Claude Code already has. Pinned to a release tag: Serena is not on PyPI, uvx builds it from the tag. No credentials; it reads and edits the working tree like the harness itself. Licence: the Serena application is GPL-3.0-or-later, its SolidLSP component MIT; it runs as a separate process, nothing links to it. --open-web-dashboard false: without it Serena opens its dashboard (127.0.0.1:24282) in the browser at every start, which with a user-scoped server is every session."
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@1.12.0"
+      ],
+      "description": "Google's Chrome DevTools server: the agent opens a page in a Chrome it starts, reads the console and the network, takes screenshots, profiles. For seeing and debugging a page, where the Playwright catalog entry is for scripted tests. No credentials; it drives a fresh Chrome profile, so no logged-in session of yours is reachable unless a page is opened in it. Pinned exact version, like every npx entry here."
     }
   },
   "addModules": [
