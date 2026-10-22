@@ -18,6 +18,9 @@ library with an API.
 - New rule `working.md`: lettered options for matters of taste, one recommended path for
   how-to questions, decisions written down so they are never asked again, a warning before
   moving a folder, and deliverables kept local rather than published to a hosted service.
+- `docs.md` now also covers HTML and SVG. Every rendered page is looked at before it is
+  reported done, and titles are plain statements without the usual machine-written
+  patterns.
 
 ## [v0.2.0] — 2026-10-04
 
