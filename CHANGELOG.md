@@ -15,6 +15,9 @@ library with an API.
 - `git.md`: before the first push an agent runs `git push --dry-run`, and when it is
   refused hands the person the exact command instead of trying other credentials. Commits
   made while iterating are regrouped into one per logical change before the push.
+- New rule `working.md`: lettered options for matters of taste, one recommended path for
+  how-to questions, decisions written down so they are never asked again, a warning before
+  moving a folder, and deliverables kept local rather than published to a hosted service.
 
 ## [v0.2.0] — 2026-10-04
 
