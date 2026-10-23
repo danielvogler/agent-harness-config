@@ -78,8 +78,8 @@ def render() -> str:
     parts.append(
         "---\n\n"
         "Rules that must *block* rather than advise are not here — a skill cannot enforce. "
-        "Those live in `.pre-commit-config.yaml` in each repo, and in the two hooks described "
-        "in `UPSTREAM.md`.\n"
+        "Those live in `.pre-commit-config.yaml` in each repo, and in the hooks `make setup-user` "
+        "wires (`tools/setup-user.py`).\n"
     )
     return "\n\n".join(parts)
 

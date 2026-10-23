@@ -217,7 +217,7 @@ Two things that are *not* documentation chores but read like them:
   credentials it needs, who owns them, and the blast radius if compromised. Adding it to
   `activateMcpServers.ids` means everyone runs it on the next `make mcp`.
 - Don't author rules without review. `custom/rules/` holds `agents.md`, `docs.md`, `gcp.md`,
-  `git.md`, `gitignore.md`, `python.md` and `repo.md`; keep each under the 60-line ceiling and
+  `git.md`, `gitignore.md`, `python.md`, `repo.md` and `working.md`; keep each under the 60-line ceiling and
   scope it with `paths:` unless it must be in context before a shell command. Rules are
   always-on context, paid on every session by every person — `make context` shows the bill.
 - **Scope a rule with the narrowest glob that works.** Upstream's `arkts/*.md` claims

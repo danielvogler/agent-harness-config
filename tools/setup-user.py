@@ -10,9 +10,10 @@ This does all five:
   1. Permission allow + deny lists in ~/.claude/settings.json. The allow list stops the
      prompts on read-only commands. The deny list is the only thing the client enforces
      no matter what the model or a tired human decides at 6pm.
-  2. The two hooks worth having, out of ECC's 21. block-no-verify stops an agent
+  2. The three hooks worth having. Two of ECC's 21: block-no-verify stops an agent
      bypassing pre-commit; config-protection stops it editing the linter config to make
-     a failure go away.
+     a failure go away. Our own block-commit-emoji (tools/hooks/) refuses a commit
+     message with an emoji in any repo, and is copied next to ECC's scripts.
   3. The team conventions into ~/.codex/AGENTS.md and ~/.opencode/AGENTS.md. Codex and
      opencode have no rules layer, and a skill is only read if the agent decides to read
      it. AGENTS.md is read every time, which is what Claude gets from rules.
@@ -42,6 +43,10 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 HOME = Path.home()
 CONVENTIONS = REPO / "custom" / "skills" / "team-conventions" / "SKILL.md"
+# Our own guards, copied into ~/.claude/scripts/hooks/ next to ECC's. ECC's installer
+# has no module kind for loose scripts, so setup-user, which wires the hooks, also
+# places them.
+OWN_HOOK_SCRIPTS = ("block-commit-emoji.py",)
 
 # Written once setup-user has been applied, so install/update/reinstall can tell the
 # difference between "never set up" and "set up, then clobbered by the installer".
@@ -141,7 +146,11 @@ HOOKS = {
         {
             "matcher": "Bash",
             "hooks": [
-                {"type": "command", "command": "node ~/.claude/scripts/hooks/block-no-verify.js"}
+                {"type": "command", "command": "node ~/.claude/scripts/hooks/block-no-verify.js"},
+                {
+                    "type": "command",
+                    "command": "python3 ~/.claude/scripts/hooks/block-commit-emoji.py",
+                },
             ],
         },
         {
@@ -213,6 +222,18 @@ def setup_attribution(dry: bool) -> None:
         path.write_text(json.dumps(settings, indent=2) + "\n")
 
 
+def copy_own_hook_scripts(dry: bool) -> None:
+    target = HOME / ".claude" / "scripts" / "hooks"
+    for name in OWN_HOOK_SCRIPTS:
+        source = REPO / "tools" / "hooks" / name
+        dest = target / name
+        if dest.exists() and dest.read_text() == source.read_text():
+            continue
+        changes.append(f"hooks: copied {name}")
+        if not dry:
+            shutil.copy2(source, dest)
+
+
 def setup_hooks(dry: bool) -> None:
     path = HOME / ".claude" / "settings.json"
     script = HOME / ".claude" / "scripts" / "hooks" / "block-no-verify.js"
@@ -229,22 +250,23 @@ def setup_hooks(dry: bool) -> None:
     # including GateGuard (a justification prompt before every Bash call and every
     # first edit of a file) and matchers that send transcript text to an external
     # LLM or auto-deny edits. Nobody opted into that, so this is now authoritative:
-    # our two guards, both of which only ever refuse an operation, and nothing else.
+    # our three guards, each of which only ever refuses an operation, and nothing else.
     #
     # To run the full upstream set instead, delete this and let the installer's
     # registry stand — but read the six capabilities install.sh lists first.
+    copy_own_hook_scripts(dry)
     if existing == HOOKS:
-        skipped.append("hooks: already limited to the two guards")
+        skipped.append("hooks: already limited to the three guards")
         return
 
     if existing:
         extra = sum(len(v) for v in existing.values() if isinstance(v, list)) - len(HOOKS)
         changes.append(
-            f"hooks: reset to block-no-verify and config-protection "
+            f"hooks: reset to block-no-verify, block-commit-emoji and config-protection "
             f"({extra} upstream matcher(s) disabled)"
         )
     else:
-        changes.append("hooks: enabled block-no-verify and config-protection")
+        changes.append("hooks: enabled block-no-verify, block-commit-emoji and config-protection")
 
     if not dry:
         backup(path)

@@ -63,6 +63,21 @@ This covers every "Last updated" and "Analysis date" field, dated filenames, and
 rendered to PDF — where a wrong date is invisible until someone cites it. Never carry a
 date forward from an older document without re-checking it.
 
+### Look at it before calling it done
+
+Anything rendered (a slide, a page, a diagram, a PDF) is opened and looked at, every page,
+with the Read tool on the image or preview, before the reply says it is done. Check for
+text overflowing its box, overlapping or clipped elements, images upside down or cropped,
+arrows that miss their target, and the same element styled differently across pages. Say
+which pages you looked at. A build that succeeded says nothing about how it looks.
+
+### Plain words
+
+Titles and copy are plain statements. No "From X to Y:" openers, no "X, not Y" contrasts,
+no counted slogans ("One agent, two questions"), no colon set-ups, no numbers that carry no
+information. Name the subject of every heading and tile: "Solver converges", not
+"Converges". Read each line alone and ask whether a person would have written it.
+
 ## GCP — conventions
 
 ### What data may go into the cloud at all
@@ -118,8 +133,8 @@ Where a data-residency requirement applies, it decides; check before assuming it
 
 Add a scope: `fix(storage): ...`, not `fix: ...`. The scope is the area touched.
 
-Emoji: some repos use gitmoji, most do not. Match the repo you are in; do not introduce it
-to a repo that has none.
+No emoji in a commit message, in any repo, gitmoji repos included. The type and scope
+already say what an emoji would. A Claude Code hook and the repo's commit-msg hook refuse it.
 
 ### Shape of a message
 
@@ -148,26 +163,16 @@ Never name an agent, model, tool or session, and **never add AI attribution** �
 `Co-Authored-By` trailer for a tool and no "Generated with ..." line, in a commit message or
 in a PR description. Commits and PRs are authored by the person whose name is on them.
 
-Where it is enforced, so do not work around any of it:
-
-- `make setup-user` turns Claude Code's own attribution off (`attribution` in
-  `~/.claude/settings.json`), so it is not generated in the first place.
-- A `commit-msg` hook rejects it in commit messages, and a PR check runs the same hook on the
-  PR description.
-
-A repo that wants attribution opts back in: `attribution` in its own `.claude/settings.json`
-overrides the user setting, and it leaves out the hook and the PR check.
+`make setup-user` turns Claude Code's attribution off, and a `commit-msg` hook plus a PR
+check reject it; do not work around either. A repo that wants it back sets `attribution`
+in its own `.claude/settings.json` and leaves out the hook and the check.
 
 ### Never commit an absolute path
 
-Not in the message, not in code, not in a committed `.agent/` or `.claude/` file.
-
-- Wrong: ``Updated `/Users/an/git/projects/backend/scripts/import.js` ``
-- Right: ``Updated `import.js` `` or ``Fixed `backend/scripts/provision.js` ``
-
-`/Users/<someone>/...` breaks for everyone else and for CI the moment it is shared, and in
-a commit message it survives forever. If one is genuinely unavoidable in code, ask first
-and leave a comment above it saying why.
+Not in the message, not in code, not in a committed `.agent/` or `.claude/` file. Write
+`backend/scripts/import.js`, never `/Users/<someone>/...`: that breaks for everyone else and
+for CI, and in a commit message it survives forever. If one is unavoidable in code, ask
+first and leave a comment above it saying why.
 
 ### Staging and history
 
@@ -178,6 +183,13 @@ and leave a comment above it saying why.
   and wait. Prefer a squash that leaves the tree untouched.
 - **Never rewrite history that is already pushed** to a shared branch.
 - Commit or push only when asked. If on the default branch, branch first.
+- **Regroup before the pull request:** one commit per logical change, before the push.
+
+### Pushing
+
+The person's setup decides which credential pushes where. Before the first push, run
+`git push --dry-run`; if it is refused, give the person the exact push command and open the
+pull request once they have pushed. Never switch remote URL, protocol, token or SSH key.
 
 ### Filing an issue via API or MCP
 
@@ -333,16 +345,47 @@ detect-private-key), `uv-lock`, `gitleaks`.
 mypy runs as a **`local`** hook (`entry: uv run mypy`) — the upstream mirror runs isolated,
 can't see project deps, and invents import errors.
 
-Add a `commit-msg` pygrep hook rejecting AI attribution (`Co-Authored-By` trailers and
-"Generated with" lines), a PR workflow that runs the same hook on the PR description (copy
-`pr-description.yml` from the harness repo), and a hook rejecting `"type": "service_account"`
-in JSON.
+Add `commit-msg` pygrep hooks rejecting AI attribution (`Co-Authored-By` trailers and
+"Generated with" lines) and emoji, a PR workflow that runs the attribution hook on the PR
+description, and a hook rejecting `"type": "service_account"` in JSON. Copy the hooks and
+`pr-description.yml` from the harness repo.
 
 ### Also at the root
 
 `LICENSE` (Apache-2.0) with `NOTICE`, `CHANGELOG.md`, `.editorconfig`, `.python-version`,
 `.env.example` listing every variable with no values, a committed `uv.lock`.
 
+## Working with the person
+
+Extends ECC's `common/` rules with what people on this team corrected agents for most.
+
+### Options or one answer
+
+- **A matter of taste** (colour, wording, naming, layout): offer two to four lettered
+  options with concrete values (hex codes, the exact wording) and change nothing until
+  one is picked. "Make a suggestion" asks for options, not for an edit.
+- **A how-to question**: give the one path you recommend and its steps. Add at most one
+  alternative, and only when it changes the outcome. A survey of every way confuses.
+
+### A decision stays decided
+
+When the person decides something, write it to where it lasts in the same turn: the
+ledger row, the commit message, the brief or memory. Never ask it again, also not after
+the conversation was summarized. Read the summary's list of decisions before asking.
+
+### Say where the work happens
+
+- Before moving or renaming a directory under `~/projects`, say so and wait. A shell or
+  session open inside it breaks with `getcwd` errors.
+- A session that works in a worktree or a copy names that path in its first reply, and
+  says when the work moves back.
+
+### Deliverables stay local
+
+An HTML page, dashboard or report is written to the repo or the scratchpad and opened
+with `open`. Never publish it to a hosted service (claude.ai artifacts, a gist, a paste
+site) unless the person asks for that service by name.
+
 ---
 
-Rules that must *block* rather than advise are not here — a skill cannot enforce. Those live in `.pre-commit-config.yaml` in each repo, and in the two hooks described in `UPSTREAM.md`.
+Rules that must *block* rather than advise are not here — a skill cannot enforce. Those live in `.pre-commit-config.yaml` in each repo, and in the hooks `make setup-user` wires (`tools/setup-user.py`).

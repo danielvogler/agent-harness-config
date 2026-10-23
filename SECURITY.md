@@ -36,8 +36,8 @@ team, not a bug in one project.
   config, back it up first, and say how to undo.
 - **Guards, not just advice.** `make setup-user` adds a deny list to Claude Code (cloud
   deletes, `rm -rf`, `sudo`, reading `.env`, SSH keys and service-account files) and wires
-  two hooks: one blocks `git commit --no-verify`, the other stops an agent editing linter
-  config to make a failure go away.
+  three hooks: one blocks `git commit --no-verify`, one refuses a commit message with an
+  emoji, and one stops an agent editing linter config to make a failure go away.
 - **CI checks every branch** against the pinned upstream, and weekly in case upstream
   removes something the overlay depends on.
 

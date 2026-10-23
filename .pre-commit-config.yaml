@@ -107,3 +107,13 @@ repos:
         # lines and a human co-author followed by the word "claude" anywhere was blocked.
         args: [--ignore-case]
         entry: '(co-authored-by:.*|generated (with|by) \[?)(claude|anthropic|copilot|cursor|gemini|codex|chatgpt|openai)'
+
+      # custom/rules/git.md: no emoji in a commit message. Same ranges as
+      # tools/hooks/block-commit-emoji.py, which covers repos without this hook.
+      # pygrep matches bytes, where \U escapes are invalid, so the set is spelled as
+      # UTF-8. Emoji only: arrows, check marks and prompt glyphs stay allowed.
+      - id: no-emoji-in-commit
+        name: no emoji in the commit message
+        language: pygrep
+        stages: [commit-msg]
+        entry: '\xF0\x9F[\x80-\xAB]|\xE2[\x98-\x9B]|\xE2\x9C[\x82\x85\x88\x89\x8F\x92\xA8]|\xE2\x9D[\x8C\x8E\x93-\x95\x97\xA4]|\xE2\x9E[\x95-\x97\xB0\xBF]|\xE2\xAC[\x85-\x87\x9B\x9C]|\xE2\xAD[\x90\x95]|\xE2\x8F[\xA9-\xBF]|\xE2\x8C[\x9A\x9B]|\xE2\x84\xB9|\xE2\x80\xBC|\xE2\x81\x89'

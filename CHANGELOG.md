@@ -9,6 +9,23 @@ library with an API.
 
 ## [Unreleased]
 
+- No emoji in commit messages, in any repo. `make setup-user` wires a third guard,
+  `block-commit-emoji`, that refuses such a commit, and repos get a matching commit-msg
+  hook to copy. `make update` applies it. As before, it resets Claude Code's hooks to the
+  guards, so a tool that adds its own hook (herdr) has to install it again afterwards.
+- `git.md`: before the first push an agent runs `git push --dry-run`, and when it is
+  refused hands the person the exact command instead of trying other credentials. Commits
+  made while iterating are regrouped into one per logical change before the push.
+- New rule `working.md`: lettered options for matters of taste, one recommended path for
+  how-to questions, decisions written down so they are never asked again, a warning before
+  moving a folder, and deliverables kept local rather than published to a hosted service.
+- `docs.md` now also covers HTML and SVG. Every rendered page is looked at before it is
+  reported done, and titles are plain statements without the usual machine-written
+  patterns.
+- New skill `close-session`: answers "can I close this?" from uncommitted and unpushed
+  work, open pull requests, worktrees, running jobs, ledgers and decisions held only in the
+  conversation.
+
 ## [v0.2.0] — 2026-10-04
 
 Run `make update`, then `make mcp`. If `make mcp` prints a `[note]` about a stored token,

@@ -51,10 +51,10 @@ detect-private-key), `uv-lock`, `gitleaks`.
 mypy runs as a **`local`** hook (`entry: uv run mypy`) — the upstream mirror runs isolated,
 can't see project deps, and invents import errors.
 
-Add a `commit-msg` pygrep hook rejecting AI attribution (`Co-Authored-By` trailers and
-"Generated with" lines), a PR workflow that runs the same hook on the PR description (copy
-`pr-description.yml` from the harness repo), and a hook rejecting `"type": "service_account"`
-in JSON.
+Add `commit-msg` pygrep hooks rejecting AI attribution (`Co-Authored-By` trailers and
+"Generated with" lines) and emoji, a PR workflow that runs the attribution hook on the PR
+description, and a hook rejecting `"type": "service_account"` in JSON. Copy the hooks and
+`pr-description.yml` from the harness repo.
 
 ## Also at the root
 
