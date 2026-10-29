@@ -9,6 +9,9 @@ library with an API.
 
 ## [Unreleased]
 
+- `repo.md`: the architecture picture (what runs where) is an SVG pair drawn by a script, in
+  zones by place with service marks, status chips and numbered arrows, and changes with the code.
+
 ## [v0.2.0] — 2026-10-04
 
 Run `make update`, then `make mcp`. If `make mcp` prints a `[note]` about a stored token,
