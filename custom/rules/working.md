@@ -18,7 +18,7 @@ the conversation was summarized. Read the summary's list of decisions before ask
 
 ## Say where the work happens
 
-- Before moving or renaming a directory under `~/projects`, say so and wait. A shell or
+- Before moving or renaming a repository or project folder, say so and wait. A shell or
   session open inside it breaks with `getcwd` errors.
 - A session that works in a worktree or a copy names that path in its first reply, and
   says when the work moves back.

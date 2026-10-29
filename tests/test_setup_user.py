@@ -102,6 +102,50 @@ class TestAttribution:
         assert read_json(settings_path(tmp_path)) == {"attribution": {"commit": "", "pr": ""}}
 
 
+class TestPermissions:
+    def test_no_rule_mixes_a_wildcard_with_the_legacy_prefix_suffix(self, setup_user):
+        # Claude Code reads `Bash(a * b:*)` as the literal prefix "a * b", so it never matches.
+        mixed = [
+            rule
+            for rule in setup_user.ALLOW + setup_user.DENY
+            if rule.endswith(":*)") and "*" in rule[: -len(":*)")]
+        ]
+
+        assert mixed == []
+
+    def test_denies_gcloud_delete_with_a_wildcard(self, setup_user):
+        assert "Bash(gcloud * delete*)" in setup_user.DENY
+
+    def test_replaces_a_retired_rule_left_by_an_earlier_run(self, setup_user, tmp_path):
+        # Arrange
+        write_json(
+            settings_path(tmp_path),
+            {"permissions": {"deny": ["Bash(gcloud * delete:*)", "Bash(my-own:*)"]}},
+        )
+
+        # Act
+        setup_user.setup_permissions(dry=False)
+
+        # Assert
+        deny = read_json(settings_path(tmp_path))["permissions"]["deny"]
+        assert "Bash(gcloud * delete:*)" not in deny
+        assert "Bash(gcloud * delete*)" in deny
+        assert "Bash(my-own:*)" in deny
+        assert "permissions.deny: -1 retired entries" in setup_user.changes
+
+    def test_dry_run_reports_a_retired_rule_but_writes_nothing(self, setup_user, tmp_path):
+        # Arrange
+        before = {"permissions": {"deny": ["Bash(gcloud * delete:*)"]}}
+        write_json(settings_path(tmp_path), before)
+
+        # Act
+        setup_user.setup_permissions(dry=True)
+
+        # Assert
+        assert read_json(settings_path(tmp_path)) == before
+        assert "permissions.deny: -1 retired entries" in setup_user.changes
+
+
 class TestPruneStaleInstallState:
     def test_drops_a_copy_file_record_whose_destination_is_gone(self, setup_user, tmp_path):
         # Arrange

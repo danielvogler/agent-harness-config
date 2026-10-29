@@ -278,55 +278,54 @@ far behind `origin/main` you are, and delegates per-file drift to upstream's own
 everything it flags is fixed by `make update`. Run it before reporting that something is broken —
 "am I on the current config?" is the first question, and this answers it.
 
-### Finish the install: stop the permission prompts
+### Permissions: what `make setup-user` allows and denies
 
-`make install` never touches `~/.claude/settings.json`. Everything it writes is recorded so
-`make uninstall` can reverse exactly that, and your settings file is yours — model, theme, your
-own permissions. So this one step is a paste, not a script.
+`make install` never touches `~/.claude/settings.json`: your settings file is yours, and
+`make uninstall` could not reverse a change to it. `make setup-user` writes two lists into
+`permissions` there, both defined in [`tools/setup-user.py`](tools/setup-user.py) as `ALLOW`
+and `DENY`. That file is the only copy; this section explains them rather than repeating them.
 
-Without it you get a prompt every time an agent wants to run `git status` or
-`gcloud ... list`, which trains people to approve without reading — worse for safety than a
-tight allowlist. **Everything below is read-only; none of it can create, modify, delete or
-spend.** Merge into `permissions.allow` in `~/.claude/settings.json`:
+**`allow`** stops the prompt on read-only commands: `git status`, `gcloud ... list`,
+`bq show`, `uv run pytest` and the like. Without it you approve the same harmless command
+fifty times a day, which trains people to approve without reading. **None of it can create,
+modify, delete or spend.**
 
-```json
-{
-  "permissions": {
-    "allow": [
-      "Bash(git status:*)", "Bash(git log:*)", "Bash(git diff:*)", "Bash(git show:*)",
-      "Bash(git branch:*)", "Bash(git remote -v:*)", "Bash(git rev-parse:*)",
+**`deny`** refuses a command outright, without a prompt. It is the only part Claude Code
+enforces regardless of what the model or you decide in the moment, and it wins over `allow`
+and over anything a project's own settings allow. Because it sits in your user settings, it
+applies in every project. It covers:
 
-      "Bash(gcloud config list:*)", "Bash(gcloud projects list:*)",
-      "Bash(gcloud projects describe:*)", "Bash(gcloud compute instances list:*)",
-      "Bash(gcloud compute instances describe:*)", "Bash(gcloud storage ls:*)",
-      "Bash(gcloud run services list:*)", "Bash(gcloud run services describe:*)",
-      "Bash(gcloud logging read:*)", "Bash(gcloud iam service-accounts list:*)",
+| Rule | Why |
+| --- | --- |
+| `gcloud * delete*`, `bq rm`, `gsutil rm -r`, `terraform destroy`, `tofu destroy` | Destroys cloud resources; [`custom/rules/gcp.md`](custom/rules/gcp.md) requires an explicit yes first, and a rule can only advise |
+| `rm -rf` | Recursive deletion of local files |
+| `sudo` | Nothing an agent does needs root, and a wrong one damages the machine, not a repo |
+| `Read` of `*service-account*.json`, `.env`, `id_rsa`, `id_ed25519` | Keeps keys and credentials out of the agent's context entirely |
 
-      "Bash(bq ls:*)", "Bash(bq show:*)", "Bash(bq query --dry_run:*)",
+A denied command fails with a message; to run it, run it yourself in a terminal. The rules
+match on the command text, so they catch mistakes, not an agent deliberately working around
+them.
 
-      "Bash(uv run pytest:*)", "Bash(uv run ruff check:*)", "Bash(uv tree:*)",
-      "Bash(pre-commit run:*)",
+How it is applied:
 
-      "Bash(make validate:*)", "Bash(make doctor:*)", "Bash(make context:*)", "Bash(make plan:*)"
-    ],
-    "deny": [
-      "Bash(gcloud * delete:*)", "Bash(bq rm:*)", "Bash(gsutil rm -r:*)",
-      "Bash(terraform destroy:*)", "Bash(rm -rf:*)",
-      "Read(**/*service-account*.json)", "Read(**/.env)", "Read(**/id_rsa)", "Read(**/id_ed25519)"
-    ]
-  }
-}
-```
+- **It merges.** Missing entries are appended, your own entries are left alone, and nothing
+  is reordered. Run it again after every `make update`; it reports `already current` when
+  there is nothing to do.
+- **It removes only what it retired.** A rule an earlier version wrote and that is now wrong
+  is listed in `RETIRED` in the same file, and the next run deletes it. Nothing else is ever
+  removed, including a rule we dropped from `ALLOW`; that is what `RETIRED` is for.
+- **It backs up first**, to `~/.claude/settings.json.bak`. `python3 tools/setup-user.py
+  --dry-run` shows what it would change without writing.
+- **To see what is in force**, run `/permissions` in Claude Code.
 
-The `deny` half is not optional. An allowlist alone leaves everything else to a prompt, and a
-prompt is a decision made by a tired human at 6pm — `deny` is the only part the client enforces
-regardless of what the model or you decide in the moment. It encodes the destructive-operation
-rule from [`custom/rules/gcp.md`](custom/rules/gcp.md), which as a rule can only advise. The
-`Read` entries stop a credential or private key being pulled into context at all.
+Rule syntax, if you add your own: `Bash(git status *)` matches `git status` followed by
+anything. The space matters: `Bash(ls*)` also matches `lsof`. The older `:*` suffix
+(`Bash(git status:*)`) still works but is deprecated, and combined with another `*` it never
+matches, which is what broke the gcloud rule ([#1](https://github.com/GEG-ETHZ/agent-harness-config/issues/1)).
 
-> An AgentShield scan flagged exactly this — "no deny list configured" — as its one finding
-> that applied to our real setup. Details and its other results are worth reading before
-> trusting the tool further.
+> An AgentShield scan flagged "no deny list configured" as its one finding that applied to
+> our real setup. Details and its other results are worth reading before trusting the tool
+> further.
 
 What is **deliberately absent**, and should stay absent: no bare `Bash(gcloud:*)` or
 `Bash(bq:*)` — those would permit `delete` and `rm`, quietly overriding what

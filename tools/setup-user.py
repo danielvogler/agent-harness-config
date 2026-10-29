@@ -126,7 +126,9 @@ ALLOW = [
 ]
 
 DENY = [
-    "Bash(gcloud * delete:*)",
+    # Not `gcloud * delete:*`: mixed with a `*`, the legacy `:*` suffix is read as a literal
+    # prefix and the rule never matches.
+    "Bash(gcloud * delete*)",
     "Bash(bq rm:*)",
     "Bash(gsutil rm -r:*)",
     "Bash(terraform destroy:*)",
@@ -140,6 +142,12 @@ DENY = [
     "Read(**/id_rsa)",
     "Read(**/id_ed25519)",
 ]
+
+# Rules an earlier version wrote that no longer do what they say. Removed on the next run,
+# or they stay in everyone's settings and Claude Code warns about them on every start.
+RETIRED = {
+    "deny": ["Bash(gcloud * delete:*)"],
+}
 
 HOOKS = {
     "PreToolUse": [
@@ -189,6 +197,10 @@ def setup_permissions(dry: bool) -> None:
 
     for key, wanted in (("allow", ALLOW), ("deny", DENY)):
         current = perms.setdefault(key, [])
+        retired = [x for x in current if x in RETIRED.get(key, [])]
+        if retired:
+            current[:] = [x for x in current if x not in retired]
+            changes.append(f"permissions.{key}: -{len(retired)} retired entries")
         added = [x for x in wanted if x not in current]
         if added:
             current.extend(added)
