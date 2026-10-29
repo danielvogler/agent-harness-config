@@ -241,6 +241,10 @@ and worth setting a ceiling on.
   file you forgot to install.
 - **The installer adds and overwrites, but never removes.** A file dropped from `custom/`
   stays in everyone's `~` until they run `make reinstall`.
+- **`make setup-user` only appends permissions.** Removing or rewriting an entry in `ALLOW`
+  or `DENY` in `tools/setup-user.py` leaves the old one in everyone's settings. Add the old
+  string to `RETIRED` in the same file, and tell people in `CHANGELOG.md` to run
+  `make setup-user` again.
 - **Editing a rule means regenerating the conventions skill.** Run `make conventions`; the
   pre-commit hook fails until the two match.
 - **pre-commit excludes `custom/` for every hook.** A hook with a `files:` filter on

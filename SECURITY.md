@@ -3,7 +3,7 @@
 ## Reporting
 
 Report a vulnerability privately through
-[GitHub security advisories](https://github.com/danielvogler/agent-harness-config/security/advisories/new).
+[GitHub security advisories](https://github.com/GEG-ETHZ/agent-harness-config/security/advisories/new).
 Do not open a public issue for anything exploitable, or for a token, key or internal value
 that reached a commit.
 
