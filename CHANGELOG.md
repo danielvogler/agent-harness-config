@@ -64,6 +64,6 @@ First public release.
   every `v*` tag.
 - Vendored skills ship with their licenses in `THIRD_PARTY_LICENSES/`.
 
-[Unreleased]: https://github.com/GEG-ETHZ/agent-harness-config/compare/v0.2.0...HEAD
-[v0.2.0]: https://github.com/GEG-ETHZ/agent-harness-config/compare/v0.1.0...v0.2.0
-[v0.1.0]: https://github.com/GEG-ETHZ/agent-harness-config/releases/tag/v0.1.0
+[Unreleased]: https://github.com/danielvogler/agent-harness-config/compare/v0.2.0...HEAD
+[v0.2.0]: https://github.com/danielvogler/agent-harness-config/compare/v0.1.0...v0.2.0
+[v0.1.0]: https://github.com/danielvogler/agent-harness-config/releases/tag/v0.1.0

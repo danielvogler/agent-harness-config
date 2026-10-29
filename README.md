@@ -3,7 +3,7 @@
   <img alt="agent-harness-config — one agent config, installed into every coding harness: Claude Code, Cursor, Codex, Antigravity and opencode" src="docs/assets/banner-light.svg">
 </picture>
 
-[![CI](https://github.com/GEG-ETHZ/agent-harness-config/actions/workflows/ci.yml/badge.svg)](https://github.com/GEG-ETHZ/agent-harness-config/actions/workflows/ci.yml)
+[![CI](https://github.com/danielvogler/agent-harness-config/actions/workflows/ci.yml/badge.svg)](https://github.com/danielvogler/agent-harness-config/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-0E0E10.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/python-3.12-0E0E10.svg)](https://www.python.org/downloads/)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-0E0E10.svg)](https://pre-commit.com/)
@@ -18,7 +18,7 @@ them — in every project.**
 Paste this into Claude Code, Codex or opencode:
 
 ```text
-Clone https://github.com/GEG-ETHZ/agent-harness-config, read its AGENTS.md,
+Clone https://github.com/danielvogler/agent-harness-config, read its AGENTS.md,
 and set it up on this machine.
 ```
 
@@ -49,7 +49,7 @@ are *available* everywhere by default, rather than depending on who remembered t
 Three commands. Do them in order.
 
 ```bash
-git clone git@github.com:GEG-ETHZ/agent-harness-config.git
+git clone git@github.com:danielvogler/agent-harness-config.git
 cd agent-harness-config
 
 make install      # 1. copies skills, rules, commands and agents into every tool you use
@@ -236,7 +236,7 @@ agent-harness-config/
 Prerequisites: `git`, `node` (ECC's installer is Node), `python3`, `make`.
 
 ```bash
-git clone git@github.com:GEG-ETHZ/agent-harness-config.git
+git clone git@github.com:danielvogler/agent-harness-config.git
 cd agent-harness-config
 make install
 ```
