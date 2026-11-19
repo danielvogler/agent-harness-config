@@ -43,3 +43,4 @@ anything addressed to a maintainer rather than to the agent is paid for and read
 | `gcp.md` | Unscoped on purpose — deciding to delete something, or to upload a dataset, is not a file read. |
 | `python.md` | Extends and overrides ECC's `python/coding-style.md`. Both install under `~/.claude/rules/ecc/`, so cross-references resolve there, not in this repo. |
 | `repo.md` | Extracted from repositories already built this way rather than invented. |
+| `working.md` | Unscoped: choosing between options, or deciding to move a folder, is not a file read. Taken from the corrections people made to agents most often. |

@@ -93,7 +93,7 @@ conventions: ## Regenerate the team-conventions skill from custom/rules/
 # install-state and so outside what `make uninstall` reverses. Undo is `claude mcp remove`.
 # make install copies files but turns nothing on. This turns it on. Separate from install
 # because it writes your own config, which make uninstall cannot reverse.
-setup-user: ## Turn the shared config on for you: permissions, 2 hooks, no AI attribution, conventions for codex/opencode
+setup-user: ## Turn the shared config on for you: permissions, 3 hooks, no AI attribution, conventions for codex/opencode
 	@python3 tools/setup-user.py
 
 mcp: ## Activate the agreed MCP servers: make mcp [ADD=github] [GCP_PROJECT=x] [ENV_FILE=path]

@@ -350,7 +350,7 @@ def check_hooks(states: list[tuple[Path, dict]]) -> None:
             note(
                 WARN,
                 f"{target.get('id')}: no hooks declared in settings",
-                "run `make setup-user` to turn on the two guards",
+                "run `make setup-user` to turn on the three guards",
             )
         else:
             events = (load_json(registry) or {}).get("hooks", {})

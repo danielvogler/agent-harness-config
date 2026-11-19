@@ -102,6 +102,50 @@ class TestAttribution:
         assert read_json(settings_path(tmp_path)) == {"attribution": {"commit": "", "pr": ""}}
 
 
+class TestPermissions:
+    def test_no_rule_mixes_a_wildcard_with_the_legacy_prefix_suffix(self, setup_user):
+        # Claude Code reads `Bash(a * b:*)` as the literal prefix "a * b", so it never matches.
+        mixed = [
+            rule
+            for rule in setup_user.ALLOW + setup_user.DENY
+            if rule.endswith(":*)") and "*" in rule[: -len(":*)")]
+        ]
+
+        assert mixed == []
+
+    def test_denies_gcloud_delete_with_a_wildcard(self, setup_user):
+        assert "Bash(gcloud * delete*)" in setup_user.DENY
+
+    def test_replaces_a_retired_rule_left_by_an_earlier_run(self, setup_user, tmp_path):
+        # Arrange
+        write_json(
+            settings_path(tmp_path),
+            {"permissions": {"deny": ["Bash(gcloud * delete:*)", "Bash(my-own:*)"]}},
+        )
+
+        # Act
+        setup_user.setup_permissions(dry=False)
+
+        # Assert
+        deny = read_json(settings_path(tmp_path))["permissions"]["deny"]
+        assert "Bash(gcloud * delete:*)" not in deny
+        assert "Bash(gcloud * delete*)" in deny
+        assert "Bash(my-own:*)" in deny
+        assert "permissions.deny: -1 retired entries" in setup_user.changes
+
+    def test_dry_run_reports_a_retired_rule_but_writes_nothing(self, setup_user, tmp_path):
+        # Arrange
+        before = {"permissions": {"deny": ["Bash(gcloud * delete:*)"]}}
+        write_json(settings_path(tmp_path), before)
+
+        # Act
+        setup_user.setup_permissions(dry=True)
+
+        # Assert
+        assert read_json(settings_path(tmp_path)) == before
+        assert "permissions.deny: -1 retired entries" in setup_user.changes
+
+
 class TestPruneStaleInstallState:
     def test_drops_a_copy_file_record_whose_destination_is_gone(self, setup_user, tmp_path):
         # Arrange
@@ -225,3 +269,49 @@ class TestPruneStaleInstallState:
 
         # Assert
         assert read_json(codex_state)["operations"] == []
+
+
+class TestHooks:
+    def install_ecc_scripts(self, home: Path) -> None:
+        hooks = home / ".claude" / "scripts" / "hooks"
+        hooks.mkdir(parents=True)
+        (hooks / "block-no-verify.js").write_text("// stub\n")
+
+    def test_wires_the_three_guards(self, setup_user, tmp_path):
+        # Arrange
+        self.install_ecc_scripts(tmp_path)
+
+        # Act
+        setup_user.setup_hooks(dry=False)
+
+        # Assert
+        commands = [
+            h["command"]
+            for matcher in read_json(settings_path(tmp_path))["hooks"]["PreToolUse"]
+            for h in matcher["hooks"]
+        ]
+        assert any("block-no-verify.js" in c for c in commands)
+        assert any("config-protection.js" in c for c in commands)
+        assert any("block-commit-emoji.py" in c for c in commands)
+
+    def test_copies_the_emoji_guard_next_to_the_ecc_scripts(self, setup_user, tmp_path):
+        # Arrange
+        self.install_ecc_scripts(tmp_path)
+
+        # Act
+        setup_user.setup_hooks(dry=False)
+
+        # Assert
+        copied = tmp_path / ".claude" / "scripts" / "hooks" / "block-commit-emoji.py"
+        source = setup_user.REPO / "tools" / "hooks" / "block-commit-emoji.py"
+        assert copied.read_text() == source.read_text()
+
+    def test_dry_run_copies_nothing(self, setup_user, tmp_path):
+        # Arrange
+        self.install_ecc_scripts(tmp_path)
+
+        # Act
+        setup_user.setup_hooks(dry=True)
+
+        # Assert
+        assert not (tmp_path / ".claude" / "scripts" / "hooks" / "block-commit-emoji.py").exists()

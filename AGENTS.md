@@ -217,7 +217,7 @@ Two things that are *not* documentation chores but read like them:
   credentials it needs, who owns them, and the blast radius if compromised. Adding it to
   `activateMcpServers.ids` means everyone runs it on the next `make mcp`.
 - Don't author rules without review. `custom/rules/` holds `agents.md`, `docs.md`, `gcp.md`,
-  `git.md`, `gitignore.md`, `python.md` and `repo.md`; keep each under the 60-line ceiling and
+  `git.md`, `gitignore.md`, `python.md`, `repo.md` and `working.md`; keep each under the 60-line ceiling and
   scope it with `paths:` unless it must be in context before a shell command. Rules are
   always-on context, paid on every session by every person — `make context` shows the bill.
 - **Scope a rule with the narrowest glob that works.** Upstream's `arkts/*.md` claims
@@ -241,6 +241,10 @@ and worth setting a ceiling on.
   file you forgot to install.
 - **The installer adds and overwrites, but never removes.** A file dropped from `custom/`
   stays in everyone's `~` until they run `make reinstall`.
+- **`make setup-user` only appends permissions.** Removing or rewriting an entry in `ALLOW`
+  or `DENY` in `tools/setup-user.py` leaves the old one in everyone's settings. Add the old
+  string to `RETIRED` in the same file, and tell people in `CHANGELOG.md` to run
+  `make setup-user` again.
 - **Editing a rule means regenerating the conventions skill.** Run `make conventions`; the
   pre-commit hook fails until the two match.
 - **pre-commit excludes `custom/` for every hook.** A hook with a `files:` filter on
