@@ -24,6 +24,11 @@ Run `make setup-user` again after `make update`.
   parts, pointer CLAUDE.md and GEMINI.md, README, Makefile, pre-commit with the shared
   hooks, CI, licence, changelog, a first architecture decision and, for Python, a uv
   project with ruff, mypy and pytest. `copier update` brings later conventions in.
+- New skill `house-style`: one look for README banners, the architecture picture,
+  diagrams and HTML reports, in a neutral palette with one accent per repo. Scripts draw
+  the banner and the architecture picture as light and dark SVG pairs and fill a
+  single-file HTML report; a repo's own colours come from a committed `.house-style.json`.
+  `repo.md` now points at it for the architecture picture and the mermaid theme line.
 - The deny rule for `gcloud ... delete` now matches. It was written as
   `Bash(gcloud * delete:*)`, which Claude Code reads as a literal prefix, so deletes were
   never blocked and Claude Code warned on every start. `make setup-user` replaces it with
