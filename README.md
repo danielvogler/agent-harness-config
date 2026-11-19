@@ -62,9 +62,15 @@ clicking through permission prompts, nothing blocks a destructive command, and C
 opencode never see the team conventions. It backs up everything it touches and prints how to
 undo. Run `python3 tools/setup-user.py --dry-run` first if you want to see it before it writes.
 
+A smaller install is opt-in: `make reinstall PROFILE=lean` keeps the guards, the team's own
+rules and skills, the Python, TypeScript and web rules and four agents, and leaves out
+upstream's `rules/common`, its commands, its workflow-quality skills and the other agents.
+Use `reinstall`, not `install`, to switch: the installer never removes files. Pass the same
+`PROFILE=lean` to every later `make update`.
+
 Optionally, `make mcp` connects four servers: live library docs (context7), read-only
 BigQuery, Miro boards, and self-hosted Jira and Confluence. A fifth, GitHub, is opt-in:
-`make mcp ADD=github`. See [`overlay/README.md`](overlay/README.md).
+`make mcp ADD=github`. `SKIP=bigquery` leaves an agreed one out on your machine. See [`overlay/README.md`](overlay/README.md).
 
 Miro authenticates in the browser and needs nothing from you first. The others need personal
 values:
@@ -222,7 +228,7 @@ agent-harness-config/
 ├── tools/
 │   ├── materialize.py               ← builds .ecc/ from the pin + custom/ + overlay
 │   ├── validate-manifests.py        ← pre-commit gate on the pin and the overlay
-│   ├── check-profile.py             ← the custom profile still resolves after materialize
+│   ├── check-profile.py             ← the custom and lean profiles still resolve after materialize
 │   ├── context-cost.py              ← what the config costs in context per session
 │   └── doctor.py                    ← is what you have installed still current?
 ├── Makefile                         ← install / update / doctor / context / check / mcp

@@ -22,6 +22,14 @@ Run `make setup-user` again after `make update`.
 - `git.md`: before the first push an agent runs `git push --dry-run`, and when it is
   refused hands the person the exact command instead of trying other credentials. Commits
   made while iterating are regrouped into one per logical change before the push.
+- Opt-in `lean` profile (`make reinstall PROFILE=lean`): the guards, `custom/`, the Python,
+  TypeScript and web rules and four agents (code, security and Python review, docs lookup).
+  No upstream `rules/common`, commands or workflow-quality skills. On Claude that is 60
+  skills instead of 147, 0 commands instead of 95 and 4 agents instead of 68. The default
+  profile is unchanged.
+- `make mcp SKIP=<id>` leaves an agreed server out on one machine, as `ADD=` adds one.
+- New rule `security.md`: the secrets part of upstream's `common/security.md`, so the lean
+  profile keeps it.
 - New rules `change.md` and `ledgers.md`: how a change moves (one worktree per writer,
   rendered output in one named folder, a pull request the person merges, then worktree
   and branch removed and `main` pulled), where each fact lives, and the `.agent/` ledger,

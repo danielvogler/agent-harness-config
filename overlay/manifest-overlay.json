@@ -179,6 +179,47 @@
       "defaultInstall": false,
       "cost": "light",
       "stability": "stable"
+    },
+    {
+      "id": "lean-rules",
+      "kind": "rules",
+      "$note": "A cherry-pick of upstream's rules/: only the languages these repos use. rules/common is left out on purpose; its PRD documents, 80 % coverage, always-parallel agents and stale model advice contradict custom/rules. Re-check these paths on every pin bump.",
+      "description": "Upstream language rules for Python, TypeScript and web only, for the lean profile.",
+      "paths": [
+        "rules/python",
+        "rules/typescript",
+        "rules/web"
+      ],
+      "targets": [
+        "claude",
+        "cursor",
+        "antigravity"
+      ],
+      "dependencies": [],
+      "defaultInstall": false,
+      "cost": "light",
+      "stability": "stable"
+    },
+    {
+      "id": "lean-agents",
+      "kind": "agents",
+      "$note": "A cherry-pick of upstream's agents/: the four that were actually called in 60 days of sessions. The rest, many described as PROACTIVELY or MUST BE USED, steer sessions into unasked work. Leaves out AGENTS.md, so Codex gets only what setup-user writes.",
+      "description": "Four upstream agents for the lean profile: code, security and Python review, and docs lookup.",
+      "paths": [
+        "agents/code-reviewer.md",
+        "agents/security-reviewer.md",
+        "agents/python-reviewer.md",
+        "agents/docs-lookup.md"
+      ],
+      "targets": [
+        "claude",
+        "cursor",
+        "antigravity"
+      ],
+      "dependencies": [],
+      "defaultInstall": false,
+      "cost": "light",
+      "stability": "stable"
     }
   ],
   "addProfiles": {
@@ -191,6 +232,19 @@
         "hooks-runtime",
         "platform-configs",
         "workflow-quality",
+        "custom-skills",
+        "custom-research",
+        "custom-rules",
+        "custom-agentic"
+      ]
+    },
+    "lean": {
+      "description": "What is actually used: the guards, the team's own rules and skills, three language rule sets and four agents. No rules/common, no upstream commands or workflow-quality skills. Opt in with PROFILE=lean.",
+      "modules": [
+        "hooks-runtime",
+        "platform-configs",
+        "lean-rules",
+        "lean-agents",
         "custom-skills",
         "custom-research",
         "custom-rules",
