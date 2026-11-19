@@ -22,6 +22,11 @@ Run `make setup-user` again after `make update`.
 - `git.md`: before the first push an agent runs `git push --dry-run`, and when it is
   refused hands the person the exact command instead of trying other credentials. Commits
   made while iterating are regrouped into one per logical change before the push.
+- New rules `change.md` and `ledgers.md`: how a change moves (one worktree per writer,
+  rendered output in one named folder, a pull request the person merges, then worktree
+  and branch removed and `main` pulled), where each fact lives, and the `.agent/` ledger,
+  `docs/ARCHITECTURE.md` and `docs/BACKLOG.md` formats. They replace a personal copy that
+  lived outside this repo.
 - New rule `working.md`: lettered options for matters of taste, one recommended path for
   how-to questions, decisions written down so they are never asked again, a warning before
   moving a folder, and deliverables kept local rather than published to a hosted service.
