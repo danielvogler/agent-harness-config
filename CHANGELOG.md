@@ -11,6 +11,9 @@ library with an API.
 
 Run `make setup-user` again after `make update`.
 
+- New skill `new-repo`: what a new repository gets, in which order, and which rule each
+  file follows, so it is written for that repo instead of copied from another. It also
+  covers bringing an existing repo up to the structure.
 - Repos now reference this repo's hooks by tag instead of copying their patterns, which
   had drifted apart. `.pre-commit-hooks.yaml` publishes `no-ai-attribution`,
   `no-commit-emoji`, `no-service-account-key` and a new `repo-conformance`, which fails on
