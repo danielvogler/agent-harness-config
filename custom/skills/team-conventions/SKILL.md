@@ -408,34 +408,9 @@ moves" (`change.md`), ending with **Things that will bite you** and a **Definiti
 3. One bold sentence, in the user's words rather than the architecture's.
 4. **Start here**, handing the reader to `AGENTS.md`.
 
-Diagrams are mermaid, themed — Google Material, one `%%{init}%%` line before the graph:
-
-```
-%%{init: {"theme":"base","themeVariables":{"primaryColor":"#FFFFFF","primaryTextColor":"#202124","primaryBorderColor":"#DADCE0","lineColor":"#5F6368","secondaryColor":"#F8F9FA","tertiaryColor":"#F8F9FA","clusterBkg":"#F8F9FA","clusterBorder":"#DADCE0","edgeLabelBackground":"#FFFFFF"},"flowchart":{"curve":"basis","nodeSpacing":40,"rankSpacing":64,"useMaxWidth":true}} }%%
-```
-
-Draw the trust boundary, not the call graph. Colour the node where a human approves.
-
-### The architecture picture
-
-What runs where is not a mermaid graph but an SVG pair, `docs/assets/architecture-{light,dark}.svg`,
-drawn by a script beside it (`docs/assets/architecture.py`) and shown atop `docs/ARCHITECTURE.md`.
-It shows how things are: a change to a service, a cloud resource, an outside provider or a flow
-between them updates the script and both SVGs in the same pull request.
-
-- **Zones are places**, each with its own colour: people (grey), the cloud project with its region
-  as a pill (light blue), outside services (lavender), build and operate (green). A domain is a
-  name, not a place: a dashed orange frame round what it points at. A part that runs in another
-  region gets its own dashed frame, labelled.
-- **Tiles**, white on the zone: the service's mark (a cloud product as a blue hexagon with a white
-  glyph, anything else as a rounded square in its brand colour), a title saying what it is for,
-  the product's name under it, a thin rule, then two lines on what runs there. A chip says `live`,
-  `planned` or `to choose`; a tile not running yet has a dashed border.
-- **Arrows** are orthogonal and run in corridors and gutters, never through a tile: blue and
-  numbered in green circles for the main flow, grey for supporting ones, each with a short label
-  on a background plate. A legend lists the numbered steps and the chips.
-- One description draws both themes. Render both in a browser and look for overlaps before
-  committing. Worked example: `faviens/cooperatives-ch-core`.
+The banner, the architecture picture (what runs where, updated in the same pull request as
+what it shows), mermaid diagrams with their `%%{init}%%` theme line, and HTML reports follow
+the `house-style` skill.
 
 ### Makefile is the interface
 
