@@ -12,6 +12,15 @@ patch.
 
 Run `make setup-user` again after `make update`.
 
+- Rules learned from corrections: `change.md` branches in the checkout the person has
+  open (a separate checkout only for a long-running process or when asked), opens a new
+  PR for a change after a PR link was given, judges a gate by its exit code and hands
+  over the command a permission check refused. `working.md` adds batch jobs with one
+  decision list at the end, one reply for many background agents, a review as a work
+  order, asks that name the place, one session per repo, clones beside the main
+  checkout, style edits across siblings, no third round of hand-made logo drafts and no
+  shell trace near a token. `git.md` applies the commit wording rule to PR text and
+  acts on sub-issues by URL, not number. `docs.md` drops absolutes and unsourced shares.
 - Releases are tagged locally: the `auto-release` post-merge hook tags, pushes and
   releases the next version from the conventional commits when `main` is pulled, and is
   published for other repos. The tag-triggered release workflow is gone.
@@ -50,9 +59,9 @@ Run `make setup-user` again after `make update`.
 - `make mcp SKIP=<id>` leaves an agreed server out on one machine, as `ADD=` adds one.
 - New rule `security.md`: the secrets part of upstream's `common/security.md`, so the lean
   profile keeps it.
-- New rules `change.md` and `ledgers.md`: how a change moves (one worktree per writer,
-  rendered output in one named folder, a pull request the person merges, then worktree
-  and branch removed and `main` pulled), where each fact lives, and the `.agent/` ledger,
+- New rules `change.md` and `ledgers.md`: how a change moves (a branch in the checkout
+  the person has open, rendered output in one named folder, a pull request the person
+  merges, then the branch deleted and `main` pulled), where each fact lives, and the `.agent/` ledger,
   `docs/ARCHITECTURE.md` and `docs/BACKLOG.md` formats. They replace a personal copy that
   lived outside this repo.
 - New rule `working.md`: lettered options for matters of taste, one recommended path for
