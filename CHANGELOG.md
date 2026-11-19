@@ -1,16 +1,20 @@
 # Changelog
 
-Notable changes to the shared config, written when a version is tagged. Tags are what
-colleagues pin.
+Notable changes to the shared config, in words. Tags are what colleagues pin; the
+`auto-release` hook makes them from the commits when `main` is pulled, and the next change
+here renames `## [Unreleased]` to that tag.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-Versioning is date-driven rather than semantic — this is a configuration bundle, not a
-library with an API.
+Versioning follows the conventional commits: a `feat` raises the minor version, a `fix` the
+patch.
 
 ## [Unreleased]
 
 Run `make setup-user` again after `make update`.
 
+- Releases are tagged locally: the `auto-release` post-merge hook tags, pushes and
+  releases the next version from the conventional commits when `main` is pulled, and is
+  published for other repos. The tag-triggered release workflow is gone.
 - New skill `new-repo`: what a new repository gets, in which order, and which rule each
   file follows, so it is written for that repo instead of copied from another. It also
   covers bringing an existing repo up to the structure.

@@ -20,6 +20,7 @@ PUBLISHED_IDS = [
     "no-commit-emoji",
     "no-service-account-key",
     "repo-conformance",
+    "auto-release",
 ]
 FIELDS = ("language", "entry", "stages", "args", "types")
 

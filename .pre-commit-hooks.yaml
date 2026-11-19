@@ -6,8 +6,8 @@
 #
 # This repo's own .pre-commit-config.yaml runs the same hooks as local ones; a test
 # (tests/test_shared_hooks.py) fails when the two copies of a pattern differ.
-# Each repo also installs the commit-msg hook type: `default_install_hook_types:
-# [pre-commit, commit-msg]` in its config.
+# Each repo also installs the commit-msg and post-merge hook types:
+# `default_install_hook_types: [pre-commit, commit-msg, post-merge]` in its config.
 
 # Co-author trailers and "Generated with ..." lines naming an AI tool. Line by line, no
 # --multiline: pygrep adds DOTALL with it, so `.*` ran across lines and a human co-author
@@ -43,5 +43,16 @@
   entry: repo-conformance
   # Not on commit-msg too: with both hook types installed it would run twice per commit.
   stages: [pre-commit]
+  pass_filenames: false
+  always_run: true
+
+# After a pull brings merged pull requests into main: the next version from the
+# conventional commits since the last v* tag, tagged, pushed and released with gh.
+# No CI workflow. Install the hook type with `default_install_hook_types: [..., post-merge]`.
+- id: auto-release
+  name: tag and release main from its commits
+  language: python
+  entry: auto-release
+  stages: [post-merge]
   pass_filenames: false
   always_run: true

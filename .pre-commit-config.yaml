@@ -5,7 +5,7 @@
 # re-synced, so our formatting hooks must not touch it — style belongs to whoever authored it.
 exclude: '^custom/'
 # commit-msg too, so `make setup` installs the trailer guard below alongside the file checks.
-default_install_hook_types: [pre-commit, commit-msg]
+default_install_hook_types: [pre-commit, commit-msg, post-merge]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -129,6 +129,13 @@ repos:
         entry: python3 tools/repo_conformance.py
         # Not on commit-msg too: with both hook types installed it would run twice per commit.
         stages: [pre-commit]
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: auto-release
+        name: tag and release main from its commits
+        entry: python3 tools/auto_release.py
+        stages: [post-merge]
         language: system
         pass_filenames: false
         always_run: true
