@@ -233,6 +233,7 @@ agent-harness-config/
 │   ├── doctor.py                    ← is what you have installed still current?
 │   └── repo_conformance.py          ← the repo-conformance hook: .agent/ ledgers, AGENTS.md
 ├── .pre-commit-hooks.yaml           ← hooks other repos pin by tag (custom/rules/repo.md)
+├── copier.yml + template/           ← the starting point for a new repository
 ├── Makefile                         ← install / update / doctor / context / check / mcp
 ├── UPSTREAM.md                      ← the pin, every delta, and known issues
 ├── CHANGELOG.md                     ← what changed between tags
@@ -530,6 +531,16 @@ It needs the `pre-commit` CLI on your PATH first: `uv tool install pre-commit`.
 If you change a script in `tools/`, run `make test` (after
 `pip install -r requirements-dev.txt`). `make check` runs everything CI runs, tests included.
 Full contributor guidance is in [`AGENTS.md`](AGENTS.md).
+
+## New repository
+
+Start a repo from `template/`, which follows `custom/rules/` out of the box:
+
+```bash
+uvx copier copy gh:danielvogler/agent-harness-config my-repo --vcs-ref <tag>
+```
+
+Without `--vcs-ref`, copier takes the newest tag. `copier update` later pulls in newer conventions.
 
 ## Updating
 

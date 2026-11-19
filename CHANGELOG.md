@@ -19,6 +19,11 @@ Run `make setup-user` again after `make update`.
   pointer to AGENTS.md. `repo.md` shows the snippet. The local ids `no-agent-coauthors`,
   `no-emoji-in-commit` and `no-gcp-service-account-keys` are renamed to match; a copied
   `pr-description.yml` runs `no-ai-attribution` now.
+- New repository template: `uvx copier copy gh:danielvogler/agent-harness-config <dest>
+  --vcs-ref <tag>` creates a repo that already follows the rules: AGENTS.md with its two
+  parts, pointer CLAUDE.md and GEMINI.md, README, Makefile, pre-commit with the shared
+  hooks, CI, licence, changelog, a first architecture decision and, for Python, a uv
+  project with ruff, mypy and pytest. `copier update` brings later conventions in.
 - The deny rule for `gcloud ... delete` now matches. It was written as
   `Bash(gcloud * delete:*)`, which Claude Code reads as a literal prefix, so deletes were
   never blocked and Claude Code warned on every start. `make setup-user` replaces it with

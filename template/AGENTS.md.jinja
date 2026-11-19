@@ -1,0 +1,95 @@
+# {{ project_name }} — agent instructions
+
+This file is the single source of truth for this repository. `CLAUDE.md` and `GEMINI.md`
+point here and hold nothing of their own; an instruction is written here and nowhere else.
+
+{{ description }}
+
+## A. Using this
+
+The runbook for setting {{ project_name }} up for somebody.
+
+1. **Ask first.** Before installing anything, ask what the person wants to do with it and
+   which of the steps below they already have.
+2. **Install the tools:** {% if python %}`uv` and {% endif %}`pre-commit`
+   (`uv tool install pre-commit`).
+3. **Set up:** `make setup`. It {% if python %}creates the environment with `uv sync` and {% endif %}installs the git hooks.
+4. **Cheapest run:** `make check`. Green means the checkout matches what CI sees.
+
+`make help` lists every target.
+
+## B. Changing the code
+
+### How a change moves
+
+1. **Branch.** Off `main`, one branch and one worktree per writer. Rendered output (a PDF,
+   an image, a built page) goes to `out/` in the person's main checkout, never only into a
+   worktree, so there is one place to look. A long-running process (a loop, a server) runs
+   from its own checkout.
+2. **One milestone.** One logical change, a test that fails without it, `make check`, one
+   commit. Small and buildable, not a day-long branch.
+3. **Show it.** Run the change for real once. Until then it is listed in
+   `.agent/DEFERRED_VERIFICATION.md`.
+4. **Route what is not the task.** Anything noticed on the way goes to a ledger, not into
+   this change.
+5. **Integrate.** Up to date with `main`, `make check`, one independent review pass, then
+   at most one recheck; what it finds after that is fixed forward. Open a pull request; the
+   person merges it on GitHub. Push only when the person says so; never force-push.
+6. **Close.** Once merged: remove the worktree, delete the branch, and in the main checkout
+   `git switch main && git pull --ff-only`. Ledgers updated, nothing left open.
+
+### Where each fact lives
+
+One place per fact; no second copy anywhere. A file is created only when it has content.
+
+| Fact | Owner |
+| --- | --- |
+| Rules, commands, gates, how a change moves | `AGENTS.md` |
+| What the thing is for and for whom | `docs/PRODUCT.md`, only if the README does not say it |
+| Why it is built the way it is | `docs/ARCHITECTURE.md` |
+| Work a person has chosen to do | `docs/BACKLOG.md` |
+| Setup, first run, everyday use | `README.md` |
+| What changed for users | `CHANGELOG.md` |
+| Open observations and proposals | the ledgers in `.agent/` |
+
+### Ledgers
+
+Tracked files in `.agent/`, each created with its first row and listing only what is open:
+`FINDINGS.md` (observations outside the task), `DEFERRED_VERIFICATION.md` (commits no
+real run has shown working yet), `AGENT_IMPROVEMENTS.md` (proposals for how work here is
+done) and `UPSTREAM_ISSUES.md` (external behaviour worked around). An entry grants no new
+scope; a person decides. A settled row is deleted in the commit that settles it.
+
+### Commands
+
+| Command | Does |
+| --- | --- |
+| `make setup` | {% if python %}`uv sync` and {% endif %}the git hooks |
+| `make hooks` | Installs the git hooks only |
+| `make check` | Everything CI runs, in the same order |
+{%- if python %}
+| `make test` | The test suite |
+{%- endif %}
+
+### Things that will bite you
+
+- **The hooks come from agent-harness-config**, pinned to `{{ harness_rev }}` in
+  `.pre-commit-config.yaml`. They refuse AI attribution and emoji in commit messages and
+  GCP service-account keys in JSON. Never `--no-verify`; bump the pin instead.
+- **`README.md` shows `docs/assets/banner-{dark,light}.svg`**, which the template does not
+  create. The house-style skill draws the pair; until then the README image is broken.
+{%- if python %}
+- **Commit `uv.lock`.** `make setup` creates it on the first run; the `uv-lock` hook keeps
+  it in step with `pyproject.toml` from then on.
+{%- endif %}
+- **`.copier-answers.yml` is how the template is updated**: `copier update` pulls
+  newer conventions into this repo. Do not edit it by hand.
+
+### Definition of done
+
+- `make check` passes locally, and so CI passes.
+- A test fails without the change and passes with it.
+- The change has been run for real once, or it is listed in
+  `.agent/DEFERRED_VERIFICATION.md`.
+- `CHANGELOG.md` says what changed for users, under `## [Unreleased]`.
+- A changed decision has its section in `docs/ARCHITECTURE.md`.

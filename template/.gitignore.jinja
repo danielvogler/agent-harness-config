@@ -1,0 +1,27 @@
+# Finder and editor clutter
+.DS_Store
+
+# Agent working notes — local only
+notes/
+TODO.md
+TODOs.md
+INSTRUCTIONS.md
+
+# Local environment; .env.example is the tracked list of variables
+.env
+
+# Rendered output (AGENTS.md, "How a change moves")
+/out/
+{%- if python %}
+
+# Python
+/.venv/
+__pycache__/
+/build/
+/dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+{%- endif %}

@@ -1,0 +1,11 @@
+"""The package imports and reports a version."""
+
+import {{ package_name }}
+
+
+def test_package_exposes_a_version() -> None:
+    # Arrange, Act
+    version = {{ package_name }}.__version__
+
+    # Assert
+    assert version

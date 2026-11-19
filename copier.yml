@@ -1,0 +1,65 @@
+# Copier reads this file. It turns template/ into a new repository that starts out
+# following custom/rules/: `copier copy gh:danielvogler/agent-harness-config <dest>
+# --vcs-ref <tag>`. Questions only for what differs between repos; everything else is
+# the convention, so it is not asked.
+_subdirectory: template
+_templates_suffix: .jinja
+_answers_file: .copier-answers.yml
+_min_copier_version: "9.0"
+
+project_name:
+  type: str
+  help: Name shown in the README title and the NOTICE
+  validator: "{% if not project_name.strip() %}Required{% endif %}"
+
+project_slug:
+  type: str
+  help: Repository name (lowercase, digits and hyphens)
+  default: "{{ project_name | lower | replace(' ', '-') | replace('_', '-') }}"
+  validator: >-
+    {% if not (project_slug | regex_search('^[a-z][a-z0-9-]*$')) %}Lowercase letters,
+    digits and hyphens, starting with a letter{% endif %}
+
+description:
+  type: str
+  help: One line on what it does, in the user's words (README sentence and banner alt)
+  validator: "{% if not description.strip() %}Required{% endif %}"
+
+github_owner:
+  type: str
+  help: GitHub user or organisation that will own the repository (for the CI badge)
+  default: danielvogler
+
+author:
+  type: str
+  help: Copyright holder for LICENSE and NOTICE
+  default: "{{ github_owner }}"
+
+python:
+  type: bool
+  help: Is this a Python project (uv, ruff, mypy, pytest)?
+  default: true
+
+licence:
+  type: str
+  help: Licence
+  default: Apache-2.0
+  choices:
+    - Apache-2.0
+    - none
+
+harness_rev:
+  type: str
+  help: Tag of agent-harness-config whose pre-commit hooks the repo pins
+  default: v0.2.0
+
+# Derived, never asked.
+package_name:
+  type: str
+  default: "{{ project_slug | replace('-', '_') }}"
+  when: false
+
+apache:
+  type: bool
+  default: "{{ licence == 'Apache-2.0' }}"
+  when: false

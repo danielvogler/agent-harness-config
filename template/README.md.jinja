@@ -1,0 +1,28 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.svg">
+  <img alt="{{ project_name }} — {{ description }}" src="docs/assets/banner-light.svg">
+</picture>
+
+[![CI](https://github.com/{{ github_owner }}/{{ project_slug }}/actions/workflows/ci.yml/badge.svg)](https://github.com/{{ github_owner }}/{{ project_slug }}/actions/workflows/ci.yml)
+{%- if apache %}
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-0E0E10.svg?style=flat)](./LICENSE)
+{%- endif %}
+{%- if python %}
+[![Python](https://img.shields.io/badge/python-3.12-0E0E10.svg?style=flat)](https://www.python.org/downloads/)
+[![uv](https://img.shields.io/badge/uv-managed-0E0E10.svg?style=flat)](https://docs.astral.sh/uv/)
+[![Ruff](https://img.shields.io/badge/lint-ruff-0E0E10.svg?style=flat)](https://docs.astral.sh/ruff/)
+[![mypy](https://img.shields.io/badge/types-mypy%20strict-0E0E10.svg?style=flat)](https://mypy-lang.org/)
+{%- endif %}
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-0E0E10.svg?style=flat)](https://pre-commit.com/)
+[![gitleaks](https://img.shields.io/badge/secrets-gitleaks-0E0E10.svg?style=flat)](https://github.com/gitleaks/gitleaks)
+
+**{{ description.rstrip(".") }}.**
+
+## Start here
+
+Read [AGENTS.md](./AGENTS.md): it says how to set this up, how to run it and how a change
+moves. Or paste this into a coding agent:
+
+```text
+Read AGENTS.md in this repository and set it up on this machine.
+```

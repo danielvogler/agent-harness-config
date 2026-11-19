@@ -1,0 +1,20 @@
+# Architecture
+
+One section per decision. A changed decision gets a new section naming the one it
+replaces; the old one stays.
+
+## 1. The repository starts from the agent-harness-config template
+
+**Decision.** {{ project_name }} was created with `copier copy
+gh:danielvogler/agent-harness-config --vcs-ref {{ harness_rev }}`. The layout, `Makefile`,
+`.pre-commit-config.yaml` and `.github/workflows/` come from the template, and
+`.copier-answers.yml` records the answers so `copier update` can bring in newer
+conventions.
+
+**Why.** A repository copied by hand from the nearest neighbour inherits that neighbour's
+drift. The template produces what the team conventions ask for and nothing more, and the
+pinned hooks keep it that way after the first commit.
+
+**Rejected.** Copying files from an existing repository: it carries that repository's
+history and quirks. A GitHub template repository: it has no update path once the copy is
+made.

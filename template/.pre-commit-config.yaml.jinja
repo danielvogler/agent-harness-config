@@ -1,0 +1,69 @@
+# Hooks run on every commit; `make check` and CI run them over every file.
+{%- if python %}
+# mypy and pytest also run before a push, as local hooks so they see the project's
+# dependencies (the upstream mypy mirror runs isolated and invents import errors).
+{%- endif %}
+default_install_hook_types: [pre-commit, commit-msg{% if python %}, pre-push{% endif %}]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-json
+      - id: check-toml
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=512]
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+{%- if python %}
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.3
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.13.9
+    hooks:
+      - id: uv-lock
+{%- endif %}
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+
+  # The team's shared hooks: no AI attribution and no emoji in a commit message, no GCP
+  # service-account key in JSON, and the repository layout the conventions ask for.
+  # pr-description.yml runs no-ai-attribution on the pull request description too.
+  - repo: https://github.com/danielvogler/agent-harness-config
+    rev: {{ harness_rev }}
+    hooks:
+      - id: no-ai-attribution
+      - id: no-commit-emoji
+      - id: no-service-account-key
+      - id: repo-conformance
+{%- if python %}
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: uv run mypy
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-push]
+      - id: pytest
+        name: pytest
+        entry: uv run pytest -q
+        language: system
+        types: [python]
+        pass_filenames: false
+        stages: [pre-push]
+{%- endif %}

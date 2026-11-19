@@ -1,0 +1,31 @@
+# The interface to this repository. Every target carries a `## comment`, and `make help`
+# prints them. `make check` runs exactly what CI runs: green here means a green pipeline.
+
+.DEFAULT_GOAL := help
+.PHONY: help setup hooks check{% if python %} test{% endif %}
+
+help: ## Show this help
+	@grep -hE '^[a-zA-Z-]+:.*?## ' $(MAKEFILE_LIST) \
+		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-7s\033[0m %s\n", $$1, $$2}'
+
+setup: ## Set up a checkout: {% if python %}environment (uv sync) and {% endif %}git hooks
+{%- if python %}
+	uv sync
+{%- endif %}
+	@$(MAKE) -s hooks
+
+hooks: ## Install the git hooks (pre-commit, commit-msg{% if python %}, pre-push{% endif %})
+	@command -v pre-commit >/dev/null 2>&1 || { \
+		echo "pre-commit not found. Install it with: uv tool install pre-commit"; exit 1; }
+	pre-commit install
+	pre-commit install-hooks
+
+check: ## Run everything CI runs: {% if python %}format, lint, types, tests{% else %}every hook{% endif %}
+	pre-commit run --all-files
+{%- if python %}
+	uv run mypy
+	@$(MAKE) -s test
+
+test: ## Run the test suite
+	uv run pytest -q
+{%- endif %}
