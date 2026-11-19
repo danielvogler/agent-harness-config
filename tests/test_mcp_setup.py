@@ -146,6 +146,15 @@ class TestWantedIds:
         # Act / Assert
         assert mcp_setup.wanted_ids(["context7"], []) == ["context7"]
 
+    def test_skipped_ones_are_left_out_even_when_also_added(self, mcp_setup):
+        # Act
+        ids = mcp_setup.wanted_ids(
+            ["context7", "bigquery", "miro"], ["github"], ["bigquery,github"]
+        )
+
+        # Assert
+        assert ids == ["context7", "miro"]
+
 
 class TestLoadEnvFile:
     def test_returns_the_keys_it_set_and_never_overrides_the_shell(

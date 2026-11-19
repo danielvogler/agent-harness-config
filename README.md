@@ -70,7 +70,7 @@ Use `reinstall`, not `install`, to switch: the installer never removes files. Pa
 
 Optionally, `make mcp` connects four servers: live library docs (context7), read-only
 BigQuery, Miro boards, and self-hosted Jira and Confluence. A fifth, GitHub, is opt-in:
-`make mcp ADD=github`. See [`overlay/README.md`](overlay/README.md).
+`make mcp ADD=github`. `SKIP=bigquery` leaves an agreed one out on your machine. See [`overlay/README.md`](overlay/README.md).
 
 Miro authenticates in the browser and needs nothing from you first. The others need personal
 values:

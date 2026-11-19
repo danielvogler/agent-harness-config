@@ -27,6 +27,7 @@ Run `make setup-user` again after `make update`.
   No upstream `rules/common`, commands or workflow-quality skills. On Claude that is 60
   skills instead of 147, 0 commands instead of 95 and 4 agents instead of 68. The default
   profile is unchanged.
+- `make mcp SKIP=<id>` leaves an agreed server out on one machine, as `ADD=` adds one.
 - New rule `security.md`: the secrets part of upstream's `common/security.md`, so the lean
   profile keeps it.
 - New rules `change.md` and `ledgers.md`: how a change moves (one worktree per writer,

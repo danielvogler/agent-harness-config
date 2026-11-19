@@ -350,10 +350,15 @@ def drift_notes(name: str, resolved_keys: set[str]) -> list[str]:
     return notes
 
 
-def wanted_ids(agreed: list[str], added: list[str]) -> list[str]:
-    """The agreed servers, then any opted into with --add (comma-separated or repeated)."""
-    extra = [i.strip() for group in added for i in group.split(",") if i.strip()]
-    return list(dict.fromkeys([*agreed, *extra]))
+def split_ids(groups: list[str]) -> list[str]:
+    """Ids from repeated and comma-separated arguments."""
+    return [i.strip() for group in groups for i in group.split(",") if i.strip()]
+
+
+def wanted_ids(agreed: list[str], added: list[str], skipped: list[str] | None = None) -> list[str]:
+    """The agreed servers, then any opted into with --add, minus any left out with --skip."""
+    skip = set(split_ids(skipped or []))
+    return [i for i in dict.fromkeys([*agreed, *split_ids(added)]) if i not in skip]
 
 
 def main() -> int:
@@ -379,6 +384,14 @@ def main() -> int:
         metavar="ID",
         help="also activate this catalog server, beyond the agreed ones (repeatable, or comma-separated)",
     )
+    parser.add_argument(
+        "--skip",
+        action="append",
+        default=[],
+        metavar="ID",
+        help="leave out this agreed server on this machine (repeatable, or comma-separated); "
+        "an already configured one stays until `claude mcp remove <id>`",
+    )
     args = parser.parse_args()
 
     env_file = args.env_file or (REPO / ".env")
@@ -399,7 +412,7 @@ def main() -> int:
 
     catalog = json.loads(CATALOG.read_text())["mcpServers"]
     agreed = json.loads(OVERLAY.read_text()).get("activateMcpServers", {}).get("ids", [])
-    wanted = wanted_ids(agreed, args.add)
+    wanted = wanted_ids(agreed, args.add, args.skip)
     if not wanted:
         print("no servers declared in activateMcpServers — nothing to do")
         return 0
