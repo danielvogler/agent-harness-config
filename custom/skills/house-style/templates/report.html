@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>{{title}}</title>
+<style>
+  /* House palette. report.py rewrites these values from the repo's .house-style.json. */
+  :root {
+    --paper: #FDFDFB;
+    --ink: #0E0E10;
+    --muted: #6F6F6B;
+    --faint: #A3A39D;
+    --line: #E5E4DE;
+    --surface: #FFFFFF;
+    --accent: #1F6F5C;
+    --font: Inter, ui-sans-serif, -apple-system, Segoe UI, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #0E0E10;
+      --ink: #FDFDFB;
+      --muted: #A3A39D;
+      --faint: #6F6F6B;
+      --line: #54545A;
+      --surface: #18181B;
+      --accent: #5FBFA6;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font: 15px/1.6 var(--font); -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    display: grid; grid-template-columns: 220px minmax(0, 760px); gap: 56px;
+    max-width: 1100px; margin: 0 auto; padding: 56px 32px 96px;
+  }
+  nav.toc { position: sticky; top: 32px; align-self: start; font-size: 13px; }
+  nav.toc .eyebrow { margin-bottom: 12px; }
+  nav.toc ul { list-style: none; margin: 0; padding: 0; }
+  nav.toc li { margin: 0 0 6px; }
+  nav.toc li li { padding-left: 12px; }
+  nav.toc a { color: var(--muted); text-decoration: none; }
+  nav.toc a:hover { color: var(--accent); }
+  .eyebrow {
+    display: flex; align-items: center; gap: 10px; color: var(--muted);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+  }
+  .eyebrow::before {
+    content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  }
+  main h1 { font-size: 40px; line-height: 1.1; letter-spacing: -0.035em; margin: 12px 0 32px; }
+  main h1::after { content: "."; color: var(--accent); }
+  main h2 {
+    font-size: 22px; letter-spacing: -0.02em; margin: 48px 0 12px;
+    padding-top: 16px; border-top: 1px solid var(--line);
+  }
+  main h3 { font-size: 16px; margin: 28px 0 8px; }
+  main p, main li { color: var(--ink); }
+  main a { color: var(--accent); }
+  main code {
+    font: 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px;
+  }
+  main pre {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; overflow-x: auto;
+  }
+  main pre code { border: 0; padding: 0; background: none; }
+  main blockquote { margin: 16px 0; padding: 2px 16px; border-left: 3px solid var(--accent); }
+  main blockquote p { color: var(--muted); }
+  main table {
+    width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+  }
+  main th {
+    text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted); background: var(--paper);
+  }
+  main th, main td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  main tr:last-child td { border-bottom: 0; }
+  main img { max-width: 100%; }
+  /* Status chip: <span class="chip live">live</span>, also planned, choose, blocked. */
+  .chip {
+    display: inline-block; padding: 1px 9px; border-radius: 999px; border: 1px solid var(--faint);
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); white-space: nowrap; vertical-align: 1px;
+  }
+  .chip.live { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+  .chip.choose { border-color: #B7791F; color: #B7791F; }
+  .chip.blocked { border-color: #B03A2E; color: #B03A2E; }
+  footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--faint); font-size: 13px; }
+  @media (max-width: 860px) {
+    .page { grid-template-columns: 1fr; gap: 24px; }
+    nav.toc { position: static; }
+  }
+  @media print {
+    nav.toc { display: none; }
+    .page { display: block; padding: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <nav class="toc" aria-label="Contents">
+    <div class="eyebrow">Contents</div>
+    {{toc}}
+  </nav>
+  <main>
+    <div class="eyebrow">{{eyebrow}}</div>
+    <h1>{{title}}</h1>
+    {{body}}
+    <footer>{{footer}}</footer>
+  </main>
+</div>
+</body>
+</html>
