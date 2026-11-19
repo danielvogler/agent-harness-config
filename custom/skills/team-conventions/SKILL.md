@@ -469,6 +469,10 @@ installs this instead of `common/`. GCP specifics are in `gcp.md`.
   rotate it, then remove it. Removing it alone does not help.
 - Before a commit, look at the staged diff for anything that looks like a secret.
   gitleaks and detect-secrets catch most; they are not a reason to stop looking.
+- A public repository names no private repository, links to none, and records no choice
+  made about one (licensing, plans, who uses it). Describe it generically: "a separate
+  package pinned to this library". Unsure of a repo's visibility? Check with
+  `gh repo view --json visibility` before writing.
 
 ## Working with the person
 
