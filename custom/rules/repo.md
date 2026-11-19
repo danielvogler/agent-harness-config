@@ -16,8 +16,8 @@ Never write an instruction into more than one of the three.
 
 Two parts, because two readers arrive: **§A — using this** (the runbook an agent follows
 to set it up for somebody: questions first, cheapest run next) and **§B — changing the
-code** (layout, setup, checks, conventions, testing). End §B with **Things that will bite
-you** and a **Definition of done**.
+code**, opening with "How a change moves" (`change.md`). End §B with **Things that will
+bite you** and a **Definition of done**.
 
 ## README
 
