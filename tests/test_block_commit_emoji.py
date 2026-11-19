@@ -88,7 +88,7 @@ def test_commit_msg_hook_and_guard_flag_the_same_characters():
     import re
 
     config = (HOOK.parent.parent.parent / ".pre-commit-config.yaml").read_text()
-    entry = re.search(r"id: no-emoji-in-commit.*?entry: '([^']+)'", config, re.S).group(1)
+    entry = re.search(r"id: no-commit-emoji.*?entry: '([^']+)'", config, re.S).group(1)
     pygrep = re.compile(entry.encode())
     spec = importlib.util.spec_from_file_location("guard", HOOK)
     guard = importlib.util.module_from_spec(spec)

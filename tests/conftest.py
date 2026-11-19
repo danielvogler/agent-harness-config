@@ -72,3 +72,8 @@ def context_cost() -> ModuleType:
 @pytest.fixture
 def conventions() -> ModuleType:
     return load_tool("build-conventions-skill.py")
+
+
+@pytest.fixture
+def conformance() -> ModuleType:
+    return load_tool("repo_conformance.py")

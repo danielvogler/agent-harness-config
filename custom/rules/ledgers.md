@@ -27,6 +27,9 @@ matters later moves to its owner first: a rule in AGENTS.md, a decision in
 A repo that already has its own channel for one of these (an issue tracker, a loop's own
 change requests) keeps it and triages it into `FINDINGS.md`.
 
+An `AGENT_IMPROVEMENTS.md` row that recurs in several repos is proposed to the harness repo
+rather than fixed per repo; its `repo-conformance` hook warns on rows older than 14 days.
+
 ## `docs/ARCHITECTURE.md`
 
 One section per decision. A changed decision gets a new section naming the one it

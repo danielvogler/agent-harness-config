@@ -11,6 +11,14 @@ library with an API.
 
 Run `make setup-user` again after `make update`.
 
+- Repos now reference this repo's hooks by tag instead of copying their patterns, which
+  had drifted apart. `.pre-commit-hooks.yaml` publishes `no-ai-attribution`,
+  `no-commit-emoji`, `no-service-account-key` and a new `repo-conformance`, which fails on
+  empty `.agent/` ledgers, settled rows and unprefixed ids, and warns on
+  `AGENT_IMPROVEMENTS.md` rows older than 14 days and on a CLAUDE.md that is more than a
+  pointer to AGENTS.md. `repo.md` shows the snippet. The local ids `no-agent-coauthors`,
+  `no-emoji-in-commit` and `no-gcp-service-account-keys` are renamed to match; a copied
+  `pr-description.yml` runs `no-ai-attribution` now.
 - The deny rule for `gcloud ... delete` now matches. It was written as
   `Bash(gcloud * delete:*)`, which Claude Code reads as a literal prefix, so deletes were
   never blocked and Claude Code warned on every start. `make setup-user` replaces it with

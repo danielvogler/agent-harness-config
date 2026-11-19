@@ -61,6 +61,10 @@ repos:
         types: [markdown]
         args: [--config, .markdownlint.json]
 
+      # no-service-account-key, no-ai-attribution, no-commit-emoji and repo-conformance
+      # are the hooks .pre-commit-hooks.yaml publishes to other repos, run here as local
+      # hooks. tests/test_shared_hooks.py fails when the two copies differ.
+      #
       # detect-secrets above is entropy-based and does not reliably flag a GCP
       # service-account key, which is low-entropy structured JSON — the give-away is its
       # shape. custom/rules/gcp.md says never to create one; this is the half that
@@ -69,7 +73,7 @@ repos:
       # pygrep, not a script: it fails when the pattern matches, needs no interpreter and
       # no file, and cannot drift when copied into a repo with a different formatter — a
       # 64-line Python version did exactly that when it was copied verbatim into another repo.
-      - id: no-gcp-service-account-keys
+      - id: no-service-account-key
         name: block GCP service-account key files (use ADC or Secret Manager)
         language: pygrep
         entry: '"type"\s*:\s*"service_account"'
@@ -98,8 +102,8 @@ repos:
       # Commits are authored by the person whose name is on them. custom/rules/git.md says
       # our repos reject AI attribution; this is the hook that does it: co-author trailers
       # and "Generated with ..." lines. pr-description.yml runs the same hook on PR
-      # descriptions, so this pattern is the only copy.
-      - id: no-agent-coauthors
+      # descriptions.
+      - id: no-ai-attribution
         name: no AI attribution (Co-Authored-By, Generated with)
         language: pygrep
         stages: [commit-msg]
@@ -112,8 +116,19 @@ repos:
       # tools/hooks/block-commit-emoji.py, which covers repos without this hook.
       # pygrep matches bytes, where \U escapes are invalid, so the set is spelled as
       # UTF-8. Emoji only: arrows, check marks and prompt glyphs stay allowed.
-      - id: no-emoji-in-commit
+      - id: no-commit-emoji
         name: no emoji in the commit message
         language: pygrep
         stages: [commit-msg]
         entry: '\xF0\x9F[\x80-\xAB]|\xE2[\x98-\x9B]|\xE2\x9C[\x82\x85\x88\x89\x8F\x92\xA8]|\xE2\x9D[\x8C\x8E\x93-\x95\x97\xA4]|\xE2\x9E[\x95-\x97\xB0\xBF]|\xE2\xAC[\x85-\x87\x9B\x9C]|\xE2\xAD[\x90\x95]|\xE2\x8F[\xA9-\xBF]|\xE2\x8C[\x9A\x9B]|\xE2\x84\xB9|\xE2\x80\xBC|\xE2\x81\x89'
+
+      # custom/rules/ledgers.md: .agent/ ledgers list only open rows with prefixed ids, and
+      # CLAUDE.md is a pointer to AGENTS.md. Same module the published hook installs.
+      - id: repo-conformance
+        name: .agent/ ledgers and AGENTS.md conform
+        entry: python3 tools/repo_conformance.py
+        # Not on commit-msg too: with both hook types installed it would run twice per commit.
+        stages: [pre-commit]
+        language: system
+        pass_filenames: false
+        always_run: true

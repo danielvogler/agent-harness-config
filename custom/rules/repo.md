@@ -14,17 +14,14 @@ paths:
 `CLAUDE.md` and `GEMINI.md` are two-line pointers to it, holding no content of their own.
 Never write an instruction into more than one of the three.
 
-Two parts, because two readers arrive: **§A — using this** (the runbook an agent follows
-to set it up for somebody: questions first, cheapest run next) and **§B — changing the
-code**, opening with "How a change moves" (`change.md`). End §B with **Things that will
-bite you** and a **Definition of done**.
+Two parts for two readers: **§A — using this** (the runbook for setting it up for somebody:
+questions first, cheapest run next) and **§B — changing the code**, opening with "How a change
+moves" (`change.md`), ending with **Things that will bite you** and a **Definition of done**.
 
 ## README
 
-1. `<picture>` with `docs/assets/banner-{dark,light}.svg`; `alt` is the one-line
-   description of what the thing does.
-2. Badges — CI, licence, Python, uv, Ruff, mypy, pre-commit, gitleaks — flat `0E0E10`,
-   not default coloured shields.
+1. `<picture>` with `docs/assets/banner-{dark,light}.svg`; `alt` says what the thing does.
+2. Badges (CI, licence, Python, uv, Ruff, mypy, pre-commit, gitleaks), flat `0E0E10`.
 3. One bold sentence, in the user's words rather than the architecture's.
 4. **Start here**, handing the reader to `AGENTS.md`.
 
@@ -67,15 +64,18 @@ means a green pipeline. Nobody should need the underlying commands.
 
 `ruff-check --fix`, `ruff-format`, the `pre-commit-hooks` basics (end-of-file-fixer,
 trailing-whitespace, check-{yaml,toml,json}, check-merge-conflict, check-added-large-files,
-detect-private-key), `uv-lock`, `gitleaks`.
+detect-private-key), `uv-lock`, `gitleaks`. mypy runs as a **`local`** hook (`entry: uv run
+mypy`): the upstream mirror runs isolated, can't see project deps, and invents import errors.
 
-mypy runs as a **`local`** hook (`entry: uv run mypy`) — the upstream mirror runs isolated,
-can't see project deps, and invents import errors.
+Reference the harness repo's hooks by tag, never copy them; copy only `pr-description.yml`, which
+runs `no-ai-attribution` on PRs. Set `default_install_hook_types: [pre-commit, commit-msg]`.
 
-Add `commit-msg` pygrep hooks rejecting AI attribution (`Co-Authored-By` trailers and
-"Generated with" lines) and emoji, a PR workflow that runs the attribution hook on the PR
-description, and a hook rejecting `"type": "service_account"` in JSON. Copy the hooks and
-`pr-description.yml` from the harness repo.
+```yaml
+- repo: https://github.com/danielvogler/agent-harness-config
+  rev: <tag>
+  hooks: [{id: no-ai-attribution}, {id: no-commit-emoji},
+          {id: no-service-account-key}, {id: repo-conformance}]
+```
 
 ## Also at the root
 
