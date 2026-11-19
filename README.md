@@ -230,7 +230,9 @@ agent-harness-config/
 │   ├── validate-manifests.py        ← pre-commit gate on the pin and the overlay
 │   ├── check-profile.py             ← the custom and lean profiles still resolve after materialize
 │   ├── context-cost.py              ← what the config costs in context per session
-│   └── doctor.py                    ← is what you have installed still current?
+│   ├── doctor.py                    ← is what you have installed still current?
+│   └── repo_conformance.py          ← the repo-conformance hook: .agent/ ledgers, AGENTS.md
+├── .pre-commit-hooks.yaml           ← hooks other repos pin by tag (custom/rules/repo.md)
 ├── Makefile                         ← install / update / doctor / context / check / mcp
 ├── UPSTREAM.md                      ← the pin, every delta, and known issues
 ├── CHANGELOG.md                     ← what changed between tags

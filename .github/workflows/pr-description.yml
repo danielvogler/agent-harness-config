@@ -3,7 +3,7 @@ name: pr-description
 # The commit-msg hook keeps AI attribution out of commits, but nothing local ever sees a
 # PR description, and Claude Code adds "Generated with Claude Code" there by default.
 # This runs the same hook on the description, so the pattern lives in one place
-# (.pre-commit-config.yaml). Separate from ci.yml so editing a description re-runs
+# (.pre-commit-hooks.yaml, which other repos reference by tag). Separate from ci.yml so editing a description re-runs
 # only this, not the whole gate.
 
 on:
@@ -33,5 +33,5 @@ jobs:
         uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
         with:
           extra_args: >-
-            no-agent-coauthors --hook-stage commit-msg
+            no-ai-attribution --hook-stage commit-msg
             --commit-msg-filename ${{ runner.temp }}/pr-description.txt

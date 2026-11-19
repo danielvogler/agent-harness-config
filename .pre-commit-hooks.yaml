@@ -1,0 +1,47 @@
+# Hooks other repos reference by tag instead of copying the patterns, which drifted:
+#
+#   - repo: https://github.com/danielvogler/agent-harness-config
+#     rev: <tag>
+#     hooks: [{id: no-ai-attribution}, {id: no-commit-emoji}, ...]
+#
+# This repo's own .pre-commit-config.yaml runs the same hooks as local ones; a test
+# (tests/test_shared_hooks.py) fails when the two copies of a pattern differ.
+# Each repo also installs the commit-msg hook type: `default_install_hook_types:
+# [pre-commit, commit-msg]` in its config.
+
+# Co-author trailers and "Generated with ..." lines naming an AI tool. Line by line, no
+# --multiline: pygrep adds DOTALL with it, so `.*` ran across lines and a human co-author
+# followed by the word "claude" anywhere was blocked.
+- id: no-ai-attribution
+  name: no AI attribution (Co-Authored-By, Generated with)
+  language: pygrep
+  stages: [commit-msg]
+  args: [--ignore-case]
+  entry: '(co-authored-by:.*|generated (with|by) \[?)(claude|anthropic|copilot|cursor|gemini|codex|chatgpt|openai)'
+
+# Same ranges as tools/hooks/block-commit-emoji.py, spelled as UTF-8 because pygrep
+# matches bytes. Emoji only: arrows, check marks and prompt glyphs stay allowed.
+- id: no-commit-emoji
+  name: no emoji in the commit message
+  language: pygrep
+  stages: [commit-msg]
+  entry: '\xF0\x9F[\x80-\xAB]|\xE2[\x98-\x9B]|\xE2\x9C[\x82\x85\x88\x89\x8F\x92\xA8]|\xE2\x9D[\x8C\x8E\x93-\x95\x97\xA4]|\xE2\x9E[\x95-\x97\xB0\xBF]|\xE2\xAC[\x85-\x87\x9B\x9C]|\xE2\xAD[\x90\x95]|\xE2\x8F[\xA9-\xBF]|\xE2\x8C[\x9A\x9B]|\xE2\x84\xB9|\xE2\x80\xBC|\xE2\x81\x89'
+
+# A GCP service-account key is low-entropy structured JSON that entropy scanners miss;
+# its shape gives it away. Use ADC or Secret Manager instead.
+- id: no-service-account-key
+  name: block GCP service-account key files (use ADC or Secret Manager)
+  language: pygrep
+  entry: '"type"\s*:\s*"service_account"'
+  types: [json]
+
+# The .agent/ ledgers and the AGENTS.md / CLAUDE.md pair (custom/rules/ledgers.md).
+# Errors block; old AGENT_IMPROVEMENTS rows and entry-file problems only warn.
+- id: repo-conformance
+  name: .agent/ ledgers and AGENTS.md conform
+  language: python
+  entry: repo-conformance
+  # Not on commit-msg too: with both hook types installed it would run twice per commit.
+  stages: [pre-commit]
+  pass_filenames: false
+  always_run: true
