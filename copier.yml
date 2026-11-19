@@ -51,7 +51,7 @@ licence:
 harness_rev:
   type: str
   help: Tag of agent-harness-config whose pre-commit hooks the repo pins
-  default: v0.2.0
+  default: v0.3.0
 
 # Derived, never asked.
 package_name:
