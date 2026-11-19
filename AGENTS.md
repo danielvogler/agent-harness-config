@@ -148,7 +148,8 @@ Same shape, into `custom/commands/` or `custom/rules/`. Commands are prompt macr
 
    All nine fields are required and no others are allowed — the upstream schema sets
    `additionalProperties: false`.
-3. Add the module id to the `custom` profile in the same file.
+3. Add the module id to the `custom` profile in the same file, and to `lean` if it belongs in
+   the opt-in lean install.
 4. Record the source repo and the SHA you vendored from in `upstream.json`.
 5. Put its license text in `THIRD_PARTY_LICENSES/` as `<owner>-<repo>.txt`, plus its
    `NOTICE` if it has one, and add a row to `THIRD_PARTY_LICENSES/README.md`.
