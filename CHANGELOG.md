@@ -12,6 +12,8 @@ patch.
 
 Run `make setup-user` again after `make update`.
 
+- `security.md`: a public repository names no private repository and no choice made
+  about one; it describes it generically.
 - Rules learned from corrections: `change.md` branches in the checkout the person has
   open (a separate checkout only for a long-running process or when asked), opens a new
   PR for a change after a PR link was given, judges a gate by its exit code and hands
