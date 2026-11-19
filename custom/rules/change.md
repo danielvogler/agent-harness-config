@@ -17,7 +17,8 @@ Goes at the top of AGENTS.md §B, adapted to the repo. The ledgers it names are 
    at most one recheck; what it finds after that is fixed forward. Open a pull request;
    the person merges it on GitHub. Push only when the person says so; never force-push.
 6. **Close.** Once merged: remove the worktree, delete the branch, and in the main
-   checkout `git switch main && git pull --ff-only`. Ledgers updated, nothing left open.
+   checkout `git switch main && git pull --ff-only`, which tags the release when the repo
+   uses the `auto-release` hook. Ledgers updated, nothing left open.
 
 ## Where each fact lives
 

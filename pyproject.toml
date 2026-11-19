@@ -1,5 +1,5 @@
 # Packaging for one thing only: pre-commit installs this repo as a hook repository with
-# pip, and the repo-conformance hook in .pre-commit-hooks.yaml needs its entry point.
+# pip, and the repo-conformance and auto-release hooks in .pre-commit-hooks.yaml need their entry points.
 # Installing the shared config does not use it; ruff.toml and pytest.ini keep their settings.
 [build-system]
 requires = ["setuptools>=64"]
@@ -12,9 +12,10 @@ requires-python = ">=3.10"
 
 [project.scripts]
 repo-conformance = "repo_conformance:main"
+auto-release = "auto_release:main"
 
 # Only the hook module ships. An explicit list keeps setuptools from discovering
 # custom/, overlay/ and the other top-level folders as packages.
 [tool.setuptools]
 package-dir = { "" = "tools" }
-py-modules = ["repo_conformance"]
+py-modules = ["repo_conformance", "auto_release"]

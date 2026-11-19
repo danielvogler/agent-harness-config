@@ -235,7 +235,7 @@ agent-harness-config/
 ├── .pre-commit-hooks.yaml           ← hooks other repos pin by tag (custom/rules/repo.md)
 ├── Makefile                         ← install / update / doctor / context / check / mcp
 ├── UPSTREAM.md                      ← the pin, every delta, and known issues
-├── CHANGELOG.md                     ← what changed between tags
+├── CHANGELOG.md                     ← what changed, in words; tags are made by auto-release
 └── .ecc/                            ← gitignored; created by make install
 ```
 
@@ -537,9 +537,12 @@ Full contributor guidance is in [`AGENTS.md`](AGENTS.md).
 SHA in `upstream.json`, run `make validate && make plan`, read the diff, commit. Never track
 upstream `main` — it takes daily commits. Review monthly.
 
-To release, rename `## [Unreleased]` in `CHANGELOG.md` to `## [vX.Y.Z] — YYYY-MM-DD`, merge,
-then push the tag `vX.Y.Z`. CI runs again and the GitHub release takes its notes from that
-section; a tag with no matching section fails.
+Releases are automatic and local. When `git pull` brings merged pull requests into `main`, the
+`auto-release` hook (`tools/auto_release.py`, a `post-merge` hook installed by `make setup`) tags
+the next version from the conventional commits since the last tag: `feat` the minor, `fix` and
+`perf` the patch, a breaking change the major (the minor before 1.0). It pushes the tag and
+creates the GitHub release with `gh`; the notes list those commits. No CI workflow is involved.
+`python3 tools/auto_release.py --dry-run` shows what the next pull would release.
 
 ## License
 
