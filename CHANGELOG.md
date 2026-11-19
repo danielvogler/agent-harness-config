@@ -31,6 +31,8 @@ Run `make setup-user` again after `make update`.
 - New skill `close-session`: answers "can I close this?" from uncommitted and unpushed
   work, open pull requests, worktrees, running jobs, ledgers and decisions held only in the
   conversation.
+- `repo.md`: the architecture picture (what runs where) is an SVG pair drawn by a script, in
+  zones by place with service marks, status chips and numbered arrows, and changes with the code.
 
 ## [v0.2.0] — 2026-10-04
 
