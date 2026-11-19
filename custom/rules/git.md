@@ -26,7 +26,8 @@ the bullets need an "also", it is two commits.
 **Nothing that needs the session to make sense.** No "as discussed", "as you asked", "per
 the review", "the issue you mentioned", "fixed the thing from earlier". No `I`, no `we`, no
 apologies, no narration of the process. State the change, not the conversation that
-produced it.
+produced it. PR titles and descriptions follow the same rule: the change and its reason,
+never what someone wanted or what was discussed.
 
 Never name an agent, model, tool or session, and **never add AI attribution** — no
 `Co-Authored-By` trailer for a tool and no "Generated with ..." line, in a commit message or
@@ -60,7 +61,11 @@ The person's setup decides which credential pushes where. Before the first push,
 `git push --dry-run`; if it is refused, give the person the exact push command and open the
 pull request once they have pushed. Never switch remote URL, protocol, token or SSH key.
 
-## Filing an issue via API or MCP
+## Issues via API or MCP
 
 `.github/ISSUE_TEMPLATE/` is a web-UI convenience the REST API, and any MCP tool built on
 it, never sees. Read the matching template first and copy its title, label and headings.
+
+Sub-issue listings span repositories: a child's `number` is in its own repo. Act on
+`html_url` or `repository_url`, never the bare `number`, and print number, repo and title
+before a batch edit.

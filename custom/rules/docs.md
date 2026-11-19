@@ -30,3 +30,6 @@ Titles and copy are plain statements. No "From X to Y:" openers, no "X, not Y" c
 no counted slogans ("One agent, two questions"), no colon set-ups, no numbers that carry no
 information. Name the subject of every heading and tile: "Solver converges", not
 "Converges". Read each line alone and ask whether a person would have written it.
+
+No absolute claim that is only usually true; write "often" or "mostly". A share, split or
+rule of thumb needs a named published source, or it goes.

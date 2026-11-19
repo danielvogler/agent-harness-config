@@ -59,12 +59,14 @@ This is the part with no equivalent anywhere else in this config.
 Goes at the top of AGENTS.md §B, adapted to the repo. The ledgers it names are in
 `ledgers.md`.
 
-1. **Branch.** Off `main`, one branch and one worktree per writer. Rendered output (a
-   PDF, an image, a built page) goes to the one folder the repo's AGENTS.md names for it
-   in the person's main checkout, never only into a worktree, so there is one place to
-   look. A long-running process (a loop, a server) runs from its own checkout.
+1. **Branch.** Off `main`, in the checkout the person has open: branch there, no extra
+   folder. A separate checkout only for a long-running process (a loop, a server), or
+   when the person asks for one. Rendered output (a PDF, an image, a built page) goes to
+   the one folder the repo's AGENTS.md names for it in the person's main checkout, never
+   only into a separate checkout, so there is one place to look.
 2. **One milestone.** One logical change, a test that fails without it, `make check`, one
-   commit. Small and buildable, not a day-long branch.
+   commit. Small and buildable, not a day-long branch. A gate passes on its exit code,
+   never on grepping its output for "passed".
 3. **Show it.** Run the change for real once. Until then it is listed in
    `.agent/DEFERRED_VERIFICATION.md`.
 4. **Route what is not the task.** Anything noticed on the way goes to a ledger, not into
@@ -72,9 +74,12 @@ Goes at the top of AGENTS.md §B, adapted to the repo. The ledgers it names are 
 5. **Integrate.** Up to date with `main`, `make check`, one independent review pass, then
    at most one recheck; what it finds after that is fixed forward. Open a pull request;
    the person merges it on GitHub. Push only when the person says so; never force-push.
-6. **Close.** Once merged: remove the worktree, delete the branch, and in the main
-   checkout `git switch main && git pull --ff-only`, which tags the release when the repo
-   uses the `auto-release` hook. Ledgers updated, nothing left open.
+   Once a PR link has been given, a further change goes on a fresh branch and a new PR;
+   check the PR's state before pushing to its branch. When a permission check refuses an
+   action, hand the person the exact command; do not look for another route.
+6. **Close.** Once merged: delete the branch, remove a separate checkout if there was one,
+   and in the main checkout `git switch main && git pull --ff-only`, which tags the
+   release when the repo uses the `auto-release` hook. Ledgers updated, nothing left open.
 
 ### Where each fact lives
 
@@ -116,6 +121,9 @@ Titles and copy are plain statements. No "From X to Y:" openers, no "X, not Y" c
 no counted slogans ("One agent, two questions"), no colon set-ups, no numbers that carry no
 information. Name the subject of every heading and tile: "Solver converges", not
 "Converges". Read each line alone and ask whether a person would have written it.
+
+No absolute claim that is only usually true; write "often" or "mostly". A share, split or
+rule of thumb needs a named published source, or it goes.
 
 ## GCP — conventions
 
@@ -196,7 +204,8 @@ the bullets need an "also", it is two commits.
 **Nothing that needs the session to make sense.** No "as discussed", "as you asked", "per
 the review", "the issue you mentioned", "fixed the thing from earlier". No `I`, no `we`, no
 apologies, no narration of the process. State the change, not the conversation that
-produced it.
+produced it. PR titles and descriptions follow the same rule: the change and its reason,
+never what someone wanted or what was discussed.
 
 Never name an agent, model, tool or session, and **never add AI attribution** — no
 `Co-Authored-By` trailer for a tool and no "Generated with ..." line, in a commit message or
@@ -230,10 +239,14 @@ The person's setup decides which credential pushes where. Before the first push,
 `git push --dry-run`; if it is refused, give the person the exact push command and open the
 pull request once they have pushed. Never switch remote URL, protocol, token or SSH key.
 
-### Filing an issue via API or MCP
+### Issues via API or MCP
 
 `.github/ISSUE_TEMPLATE/` is a web-UI convenience the REST API, and any MCP tool built on
 it, never sees. Read the matching template first and copy its title, label and headings.
+
+Sub-issue listings span repositories: a child's `number` is in its own repo. Act on
+`html_url` or `repository_url`, never the bare `number`, and print number, repo and title
+before a batch edit.
 
 ## `.gitignore`
 
@@ -481,6 +494,33 @@ the conversation was summarized. Read the summary's list of decisions before ask
   session open inside it breaks with `getcwd` errors.
 - A session that works in a worktree or a copy names that path in its first reply, and
   says when the work moves back.
+- A clone or worktree goes beside the main checkout, never in `/tmp` or a scratchpad.
+  Credentials can be chosen by the folder git runs in, so a push from elsewhere fails.
+- One working session per repository unless the person starts another. Open work goes
+  into the repo, not only into chat.
+
+### Batches, reviews and asks
+
+- A job over several items is done in one go: take the usual default for each open
+  question, note it, and list every decision once at the end.
+- With several background agents, reply once when all are back; at most one progress
+  line while waiting.
+- After the person answers a review's questions and says to go ahead, the whole review
+  is the work order. List only what was left out, and why.
+- An ask for the person's action names the place (the link, the screen, the button) and
+  what happens if it is not done.
+
+### Edits and drafts
+
+- A style edit (corners, line width, spacing) applies to every sibling on that frame,
+  page or deck, not only the element named.
+- When hand-made drafts of a logo or illustration are rejected twice, stop drafting.
+  Offer a designer brief or a proper drawing tool.
+
+### Never trace a shell that may hold a token
+
+No `set -x` or `bash -x` around anything that may call gh, git or a cloud CLI: a shell
+function wrapping it can read a token, and the trace prints it. Debug with `echo` lines.
 
 ### Deliverables stay local
 

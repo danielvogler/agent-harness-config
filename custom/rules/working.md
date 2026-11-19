@@ -22,6 +22,33 @@ the conversation was summarized. Read the summary's list of decisions before ask
   session open inside it breaks with `getcwd` errors.
 - A session that works in a worktree or a copy names that path in its first reply, and
   says when the work moves back.
+- A clone or worktree goes beside the main checkout, never in `/tmp` or a scratchpad.
+  Credentials can be chosen by the folder git runs in, so a push from elsewhere fails.
+- One working session per repository unless the person starts another. Open work goes
+  into the repo, not only into chat.
+
+## Batches, reviews and asks
+
+- A job over several items is done in one go: take the usual default for each open
+  question, note it, and list every decision once at the end.
+- With several background agents, reply once when all are back; at most one progress
+  line while waiting.
+- After the person answers a review's questions and says to go ahead, the whole review
+  is the work order. List only what was left out, and why.
+- An ask for the person's action names the place (the link, the screen, the button) and
+  what happens if it is not done.
+
+## Edits and drafts
+
+- A style edit (corners, line width, spacing) applies to every sibling on that frame,
+  page or deck, not only the element named.
+- When hand-made drafts of a logo or illustration are rejected twice, stop drafting.
+  Offer a designer brief or a proper drawing tool.
+
+## Never trace a shell that may hold a token
+
+No `set -x` or `bash -x` around anything that may call gh, git or a cloud CLI: a shell
+function wrapping it can read a token, and the trace prints it. Debug with `echo` lines.
 
 ## Deliverables stay local
 
