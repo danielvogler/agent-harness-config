@@ -54,4 +54,6 @@ function wrapping it can read a token, and the trace prints it. Debug with `echo
 
 An HTML page, dashboard or report is written to the repo or the scratchpad and opened
 with `open`. Never publish it to a hosted service (claude.ai artifacts, a gist, a paste
-site) unless the person asks for that service by name.
+site) unless the person asks for that service by name. How it looks follows the
+`house-style` skill, also in a loop or a brief written for another agent: a reference
+file, the starter, variants side by side, and `check_visual.js` exiting 0.
