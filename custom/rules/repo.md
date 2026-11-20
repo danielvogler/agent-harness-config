@@ -26,8 +26,8 @@ moves" (`change.md`), ending with **Things that will bite you** and a **Definiti
 4. **Start here**, handing the reader to `AGENTS.md`.
 
 The banner, the architecture picture (what runs where, updated in the same pull request as
-what it shows), mermaid diagrams with their `%%{init}%%` theme line, and HTML reports follow
-the `house-style` skill.
+what it shows), the README hero graph, mermaid diagrams with their `%%{init}%%` theme line,
+HTML reports, dashboards and one-pagers follow the `house-style` skill.
 
 ## Makefile is the interface
 

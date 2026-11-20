@@ -45,6 +45,10 @@ OVERRIDE_KEYS = {
     "paper_dark": ("dark", "paper"),
     "ink_dark": ("dark", "ink"),
 }
+# `font` is read here; `visual` (logo, logo_dark, mark, fade, fade_dark, ramp, font_file, references,
+# extraPhrases) is checked here and
+# read by starter.py and check_visual.js.
+OTHER_KEYS = {"font", "visual"}
 HEX = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
 
@@ -71,10 +75,11 @@ def load(root: Path | None = None) -> dict:
         sys.exit(f"{path}: not valid JSON ({exc})")
     if not isinstance(data, dict):
         sys.exit(f"{path}: expected a JSON object")
-    unknown = set(data) - set(OVERRIDE_KEYS) - {"font"}
+    unknown = set(data) - set(OVERRIDE_KEYS) - OTHER_KEYS
     if unknown:
         sys.exit(
-            f"{path}: unknown keys {sorted(unknown)}; allowed: {sorted(OVERRIDE_KEYS)} and font"
+            f"{path}: unknown keys {sorted(unknown)}; "
+            f"allowed: {sorted(OVERRIDE_KEYS)}, {sorted(OTHER_KEYS)}"
         )
     for key, (theme, colour) in OVERRIDE_KEYS.items():
         if key not in data:
@@ -83,11 +88,37 @@ def load(root: Path | None = None) -> dict:
         if not isinstance(value, str) or not HEX.match(value):
             sys.exit(f"{path}: {key} must be a #RRGGBB colour, got {value!r}")
         themes[theme][colour] = value.upper()
+    if "visual" in data:
+        check_visual(path, data["visual"])
     if "font" in data:
         if not isinstance(data["font"], str) or not data["font"].strip():
             sys.exit(f"{path}: font must be a non-empty string")
         themes["font"] = f"{data['font']}, {FONT}"
     return themes
+
+
+VISUAL_KEYS = {"logo": str, "logo_dark": str, "mark": str, "fade": list, "fade_dark": list, "ramp": str,
+               "font_file": str, "references": list, "extraPhrases": list}
+FADE_STOP = re.compile(r"^#[0-9A-Fa-f]{6} (100|[1-9]?[0-9])%$")
+
+
+def check_visual(path: Path, visual: object) -> None:
+    """The `visual` key: the logo, the brand mark, reference shots and extra phrases."""
+    if not isinstance(visual, dict):
+        sys.exit(f"{path}: visual must be a JSON object")
+    unknown = set(visual) - set(VISUAL_KEYS)
+    if unknown:
+        sys.exit(f"{path}: unknown visual keys {sorted(unknown)}; allowed: {sorted(VISUAL_KEYS)}")
+    for key, kind in VISUAL_KEYS.items():
+        if key in visual and not isinstance(visual[key], kind):
+            sys.exit(f"{path}: visual.{key} must be a {kind.__name__}")
+    for key in ("fade", "fade_dark"):
+        fade = visual.get(key)
+        if fade is not None and not (2 <= len(fade) <= 3 and all(isinstance(x, str) and FADE_STOP.match(x) for x in fade)):
+            sys.exit(f'{path}: visual.{key} takes 2 or 3 stops like "#1F6F5C 0%"')
+    ramp = visual.get("ramp")
+    if ramp is not None and not HEX.match(ramp):
+        sys.exit(f"{path}: visual.ramp must be a #RRGGBB colour, got {ramp!r}")
 
 
 # Rough advance widths for Inter, in em. Good enough to catch overflow before rendering;

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The look, part by part</title>
+<link rel="stylesheet" href="starter.css">
+<style>
+  /* the spec sheet's own frame; the parts inside use starter.css unchanged */
+  .sheet { max-width: 1240px; margin: 0 auto; padding: 28px 32px 60px; }
+  .part { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 28px; padding: 22px 0; border-top: 1px solid var(--hair); }
+  .part > .lbl { font-size: .78rem; color: var(--muted); line-height: 1.4; }
+  .part > .lbl b { display: block; color: var(--ink); font-size: .86rem; margin-bottom: 2px; }
+  .swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .sw { border-radius: 10px; box-shadow: var(--shadow); background: var(--surface); padding: 8px; font-size: .7rem; color: var(--muted); }
+  .sw i { display: block; height: 34px; border-radius: 6px; margin-bottom: 6px; box-shadow: inset 0 0 0 1px rgb(14 14 16 / .08); }
+  .typ div { margin: 4px 0; }
+  .mini-top { border: 1px solid var(--hair); border-radius: 10px; overflow: hidden; }
+  .mini-top .top { position: static; }
+  .fadebar { height: 10px; border-radius: 5px; background: var(--fade); max-width: 360px; }
+</style>
+</head>
+<body data-visual-skip="hues">
+<div class="sheet">
+  <div class="head">
+    <div class="eyebrow">house-style · spec sheet</div>
+    <h1 class="title">The <span class="em">look</span>, part by part</h1>
+    <p class="points"><span>values in references/look.md</span><span>implemented in starter.css</span><span>neutral default accent</span></p>
+  </div>
+
+  <div class="part"><div class="lbl"><b>12 Colours</b>accent, one semantic set, greys; the fade in six places</div>
+    <div>
+      <div class="swatches" data-visual-skip="hues">
+        <div class="sw"><i style="background:var(--paper)"></i>paper</div>
+        <div class="sw"><i style="background:var(--ink)"></i>ink</div>
+        <div class="sw"><i style="background:var(--ink-2)"></i>ink-2</div>
+        <div class="sw"><i style="background:var(--muted)"></i>muted</div>
+        <div class="sw"><i style="background:var(--hair)"></i>hair</div>
+        <div class="sw"><i style="background:var(--sunk)"></i>sunk</div>
+        <div class="sw"><i style="background:var(--accent)"></i>accent</div>
+        <div class="sw"><i style="background:var(--r2)"></i>ramp 2</div>
+        <div class="sw"><i style="background:var(--r4)"></i>ramp 4</div>
+        <div class="sw"><i style="background:var(--warn)"></i>watch</div>
+        <div class="sw"><i style="background:var(--bad)"></i>bad</div>
+        <div class="sw"><i style="background:var(--fade)"></i>fade</div>
+      </div>
+    </div></div>
+
+  <div class="part"><div class="lbl"><b>1 Header</b>logo and board name; text tabs: groups, hairline, the open group's pages</div>
+    <div class="mini-top"><header class="top"><div class="top-row">
+      <a class="brand" href="#"><span class="word">Northwind</span><span class="board">Depot renewal · plan, risks, decisions</span></a>
+      <nav class="tabs" aria-label="Pages"><a href="#">Understand</a><a class="on" href="#">Assess</a><a href="#">Decide</a><span class="off">Sources</span><span class="sep"></span><a class="pg on" href="#">Risks</a><a class="pg" href="#">Suppliers</a><a class="pg" href="#">Timeline</a></nav>
+    </div></header></div></div>
+
+  <div class="part"><div class="lbl"><b>2 Left column · 3 Page head</b>page name, aligned sections · eyebrow, title with the subject in the fade, points</div>
+    <div style="display:grid;grid-template-columns:216px 1fr;gap:40px">
+      <nav class="toc" style="position:static"><p class="toc-name">Risks</p><ol><li><a href="#"><b>3.1</b><span>Risks by likelihood and impact</span></a></li><li><a href="#"><b>3.2</b><span>Supplier groups</span></a></li><li><a href="#"><b>3.3</b><span>Open items before the board</span></a></li></ol></nav>
+      <div class="head"><div class="eyebrow">Assess · Risks</div><h2 class="title" style="font-size:1.35rem;font-weight:700;margin:8px 0 4px;letter-spacing:-.018em">Which <span class="em" style="background:var(--fade);-webkit-background-clip:text;background-clip:text;color:transparent">risks</span> the depot renewal has to carry</h2><p class="points"><span>Likelihood and impact from 1 to 5</span><span>an estimate</span><span>not yet reviewed</span></p></div>
+    </div></div>
+
+  <div class="part"><div class="lbl"><b>4 Section · 5 Tiles</b>hairline, solid number, heading · lifted tile, exhibit tile with a fade bar</div>
+    <div>
+      <div class="sec-head"><span class="sec-no">3.1</span><span class="sec-title">Risks by likelihood and impact</span><span class="sec-aside">estimate</span></div>
+      <div class="split"><div class="fig"><p class="fig-title">Exhibit tile</p><p class="fig-sub">5px fade bar on top, 14px radius, the lift</p></div><div class="tile"><b>Lifted tile</b><p style="margin:4px 0 0;color:var(--ink-2);font-size:.82rem">No outline: an inset edge and a soft shadow.</p></div></div>
+    </div></div>
+
+  <div class="part"><div class="lbl"><b>6 Raster · 7 Highlight · 8 Side list</b>28px chips in five ramp steps, the lifted chip · fade border and chip · one line per item</div>
+    <div class="split">
+      <div class="fig"><div class="raster">
+        <div class="y">3</div><div class="cell c3"><span class="n r3">2</span><span class="n r3">9</span></div><div class="cell c4"><span class="n r4">5</span></div><div class="cell c5"><span class="n r5 hi">1</span></div><div class="cell c5"></div><div class="cell c5"></div>
+        <div class="y">2</div><div class="cell c1"><span class="n r2">15</span></div><div class="cell c2"><span class="n r2">6</span></div><div class="cell c3"><span class="n r3">4</span></div><div class="cell c3"><span class="n r4">8</span></div><div class="cell c4"></div>
+        <div></div><div class="x">1</div><div class="x">2</div><div class="x">3</div><div class="x">4</div><div class="x">5</div></div>
+        <div class="key"><span><span class="steps"><i style="background:var(--r1)"></i><i style="background:var(--r2)"></i><i style="background:var(--r3)"></i><i style="background:var(--r4)"></i><i style="background:var(--r5)"></i></span> five ramp steps</span><span><span class="n r5 hi">1</span> named on the right</span></div></div>
+      <div class="side rec"><span class="chip fade">Highest impact</span><ul class="lines"><li><span class="no">1</span><b>Grid connection late</b><em>likelihood 4</em></li><li><span class="no">3</span><b>Range in winter below plan</b><em>likelihood 3</em></li><li><span class="no">7</span><b>Charger supplier exits</b><em>likelihood 2</em></li></ul></div>
+    </div></div>
+
+  <div class="part"><div class="lbl"><b>9 Group cards</b>count in the solid number colour, quiet grey tag</div>
+    <div class="cards"><div class="card"><div class="card-head"><b>Vehicle makers</b><span class="count">4</span></div><p><span class="tag">assumption</span>Build the buses and carry the warranty.</p></div><div class="card"><div class="card-head"><b>Charger makers</b><span class="count">3</span></div><p><span class="tag">assumption</span>Supply chargers and the load management.</p></div><div class="card"><div class="card-head"><b>Grid and civil works</b><span class="count">2</span></div><p><span class="tag">assumption</span>Build the connection and the yard.</p></div></div></div>
+
+  <div class="part"><div class="lbl"><b>10 Table · 11 Empty · decision</b>one coloured column · dashed box · fade spine</div>
+    <div>
+      <div class="table"><table><thead><tr><th>Item</th><th>Owner</th><th>Status</th></tr></thead><tbody>
+        <tr><td class="name"><b>Connection offer</b><small>after the load study</small></td><td>Utility</td><td><span class="chip warn">waiting</span></td></tr>
+        <tr><td class="name"><b>Range test</b><small>route 12 in winter</small></td><td>Operations</td><td><span class="chip bad">late</span></td></tr>
+        <tr><td class="name"><b>Transformer site</b><small>in the yard</small></td><td>Depot team</td><td><span class="chip ok">agreed</span></td></tr></tbody></table></div>
+      <div class="empty"><span class="empty-label">not written yet</span><span>The build phases come from the tender in January.</span></div>
+      <div class="decide"><p class="k">Decision</p><p>Battery buses charged in the depot overnight.</p></div>
+    </div></div>
+
+  <div class="part"><div class="lbl"><b>Type</b>one family; sizes at a 16px root</div>
+    <div class="typ"><div style="font-size:1.35rem;font-weight:700;letter-spacing:-.018em">21.6 title, bold</div><div style="font-size:1.02rem;font-weight:600">16.3 section heading, semibold</div><div style="font-size:.9rem;color:var(--muted)">14.4 points line and leads</div><div style="font-size:.86rem">13.8 tabs, tables, body in tiles</div><div style="font-size:.78rem;color:var(--ink-2)">12.5 contents column</div><div class="eyebrow">10.6 eyebrow capitals</div></div></div>
+</div>
+</body>
+</html>

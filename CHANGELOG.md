@@ -12,6 +12,24 @@ patch.
 
 Run `make setup-user` again after `make update`.
 
+- `house-style` covers every visual: dashboards, one-pagers, hero graphs and diagrams
+  beside banners and reports. `references/look.md` writes each page part out as one
+  paragraph with exact values (header with text tabs, left column, page head, section
+  divider, lifted tile, raster, highlight tile, side list, group cards, table, empty
+  state, colours and type, a never list); `assets/starter.css` implements them and a
+  test holds the two equal; `assets/look.html` and `assets/example.html` show them.
+  `references/diagrams.md` gives diagrams a system sheet per repo, tile, arrow, colour,
+  label and size rules and straight-connector Mermaid settings. A workflow (improve in
+  place, brief with a reference file, starter, variants, check, review) and
+  `check_visual.js`, which fails bland, over-coloured or sloppy pages and SVGs, including
+  labels too small at README width. The brand comes from a named profile outside the
+  skill (`brand.py --brand NAME`, `~/.config/house-style/brands`), else the repo's
+  `.house-style.json` (`visual`: logo, mark, fade, ramp, reference shots, extra
+  phrases), else what `brand.py` finds in the repo, else neutral. A red or amber accent
+  turns "good" to ink and scores to the fade's deep end; profiles carry a dark logo, dark
+  fade stops and a local font file; the dark tokens also follow a `data-theme` toggle.
+  The repo's own rules win over a brand, and its build or loop prompts change with the
+  look. `working.md` and `repo.md` point at it.
 - `security.md`: a public repository names no private repository and no choice made
   about one; it describes it generically.
 - Rules learned from corrections: `change.md` branches in the checkout the person has
