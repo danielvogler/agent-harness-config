@@ -1,0 +1,57 @@
+# Phrases check_visual.js fails on: one regular expression per line, matched case-insensitive.
+# references/writing.md says what to write instead. A repo adds its own words in
+# .house-style.json: {"visual": {"extraPhrases": ["synergy"]}}.
+
+# Hype words
+\bseamless(ly)?\b
+\bleverag(e|es|ed|ing)\b
+\bunlock(s|ed|ing)?\b
+\bgame[- ]chang
+\bcutting[- ]edge\b
+\bstate[- ]of[- ]the[- ]art\b
+\bworld[- ]class\b
+\bbest[- ]in[- ]class\b
+\brevolutioni[sz]
+\bempower(s|ed|ing)?\b
+\bsupercharg
+\bnext[- ]level\b
+\bharness(es|ing)? the power\b
+\bdelve\b
+\bin today's\b
+\bfast[- ]paced\b
+\bthe future of\b
+\bit'?s not just\b
+\blorem ipsum\b
+
+# A verdict in a headline instead of what the page shows
+head: \bwins?\b
+head: \bclear winner\b
+\bhands down\b
+\bno[- ]brainer\b
+
+# Hedging
+\bmight potentially\b
+\barguably\b
+\bit (is|'s) worth noting\b
+\bto some extent\b
+
+# Set-ups
+(^|\n)from \S+ to \S+:
+
+# German
+\bnahtlos\b
+\bbahnbrechend\b
+\bganzheitlich\b
+\bmaßgeschneidert\b
+\bmassgeschneidert\b
+\bzukunftsweisend\b
+\bin der heutigen\b
+head: \bgewinnt\b
+\bklarer sieger\b
+\bpotenziell möglicherweise\b
+
+# Audience labels in an eyebrow or title say nothing about the page
+head: \bf(ü|ue)r den verwaltungsrat\b
+head: \bf(ü|ue)r die geschäftsleitung\b
+head: \bfor the (board|management|executives?)\b
+head: \bfor (the )?(ceo|cfo|leadership)\b

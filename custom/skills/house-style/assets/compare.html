@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pick a variant</title>
+<!-- Copy beside the variants and edit the three src and the captions. Each variant is the
+     same page, same content, built from starter.css; only the traits under test differ. -->
+<style>
+  body { margin: 0; font: 14px/1.5 Inter, ui-sans-serif, -apple-system, Segoe UI, Helvetica, Arial, sans-serif; background: #F4F3EF; color: #0E0E10; }
+  header { padding: 18px 24px 8px; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  header p { margin: 0; color: #6F6F6B; }
+  .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; padding: 12px 24px 24px; }
+  figure { margin: 0; background: #fff; border: 1px solid #E5E4DE; border-radius: 10px; overflow: hidden; }
+  figcaption { padding: 10px 14px; border-bottom: 1px solid #E5E4DE; }
+  figcaption b { font-size: 15px; }
+  figcaption span { display: block; color: #6F6F6B; font-size: 13px; }
+  iframe { width: 1440px; height: 1800px; border: 0; transform: scale(.32); transform-origin: 0 0; display: block; }
+  .frame { height: 576px; overflow: hidden; }
+  a { color: inherit; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Summary page in three variants: which one do the other pages follow?</h1>
+  <p>Same content in each. Click a caption to open the page full size. Answer with A, B or C, and what to take from the others.</p>
+</header>
+<div class="row">
+  <figure><figcaption><a href="variant-a.html" target="_blank"><b>A · status column and score dots</b></a><span>Accent on the selected card only; colour sits in the marks.</span></figcaption>
+    <div class="frame"><iframe src="variant-a.html" title="Variant A"></iframe></div></figure>
+  <figure><figcaption><a href="variant-b.html" target="_blank"><b>B · tinted section heads</b></a><span>Each section head carries its part's colour; cards stay white.</span></figcaption>
+    <div class="frame"><iframe src="variant-b.html" title="Variant B"></iframe></div></figure>
+  <figure><figcaption><a href="variant-c.html" target="_blank"><b>C · page map first</b></a><span>The overview map above the head; KPIs move into the cards.</span></figcaption>
+    <div class="frame"><iframe src="variant-c.html" title="Variant C"></iframe></div></figure>
+</div>
+</body>
+</html>

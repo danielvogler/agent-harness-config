@@ -1,0 +1,313 @@
+/*
+ * house-style dashboard starter. Every value is written out in words in references/look.md;
+ * a test compares the two. starter.py replaces the accent, paper, ink, font, fade and ramp
+ * with the brand's (a named brand profile or the repo's .house-style.json).
+ */
+:root {
+  --paper: #FDFDFB;
+  --surface: #FFFFFF;
+  --ink: #0E0E10;
+  --ink-2: #3A3A3D;
+  --muted: #6A6A67;
+  --faint: #9C9B96;
+  --line: #D9D8D2;
+  --hair: #E5E4DE;
+  --sunk: #F4F3EF;
+  --accent: #1F6F5C;
+  --warn: #B45309; --warn-bg: #FDF0E3;
+  --done: #1E8E5A; --done-bg: #E3F3EA;
+  --bad: #B3261E;  --bad-bg: #FBEAE7;
+  --run: #2563A8;  --run-bg: #E6EEF8;
+  --font: Inter, ui-sans-serif, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* the fade: the brand accent as a gradient; without a brand, the accent from light to deep */
+  --fade: linear-gradient(90deg, color-mix(in srgb, var(--accent) 72%, #fff) 0%, var(--accent) 50%, color-mix(in srgb, var(--accent) 70%, #000) 100%);
+  --fade-v: linear-gradient(180deg, color-mix(in srgb, var(--accent) 72%, #fff) 0%, var(--accent) 50%, color-mix(in srgb, var(--accent) 70%, #000) 100%);
+  /* numbers (section numbers, contents numbers, counts): solid, never fade text */
+  --num: var(--accent);
+  /* the ramp: one hue in five steps; the accent unless the brand or the page sets another */
+  --ramp: var(--accent);
+  --ok: var(--accent); --ok-bg: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  /* greys drawn on the paper: a filter track, a tab hairline, a face's inset edge */
+  --track: rgb(14 14 16 / .07);
+  --rule: rgb(14 14 16 / .12);
+  --inset: rgb(14 14 16 / .06);
+  /* which logo file shows: the light one here, the dark one in the dark theme */
+  --logo-light: block; --logo-dark: none;
+  --radius: 14px;
+  --radius-s: 8px;
+  --edge: inset 0 1px 0 rgb(255 255 255 / .85), inset 0 0 0 1px rgb(14 14 16 / .07);
+  --shadow: var(--edge), 0 1px 2px rgb(14 14 16 / .04), 0 12px 32px -18px rgb(14 14 16 / .22);
+  --lift: var(--edge), 0 2px 4px rgb(14 14 16 / .05), 0 18px 36px -16px rgb(14 14 16 / .28);
+  --chip-lift: 0 0 0 2px var(--surface), 0 3px 8px -1px rgb(14 14 16 / .35);
+  color-scheme: light dark;
+}
+/* A red (or amber) accent collides with the status hues: good turns ink. starter.py
+   writes this into the tokens when it sees such an accent; by hand: <html data-accent-red>. */
+:root[data-accent-red] { --ok: var(--ink); --ok-bg: var(--sunk); }
+/* The dark tokens are written once, here. starter.py copies them under
+   :root[data-theme="dark"] at the end of the file for pages with a theme toggle;
+   data-theme="light" keeps a page light on a dark system. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0E0E10;
+    --surface: #18181B;
+    --ink: #FDFDFB;
+    --ink-2: #D6D6D1;
+    --muted: #A3A39D;
+    --faint: #6F6F6B;
+    --line: #54545A;
+    --hair: #3A3A40;
+    --sunk: #232327;
+    --accent: #5FBFA6;
+    --warn: #FDD663; --warn-bg: #3A2C08;
+    --done: #5CC98F; --done-bg: #123224;
+    --bad: #F28B82;  --bad-bg: #3B1513;
+    --run: #7DB3EE;  --run-bg: #16263A;
+    --edge: inset 0 1px 0 rgb(255 255 255 / .04), inset 0 0 0 1px rgb(255 255 255 / .08);
+    --shadow: var(--edge), 0 1px 2px rgb(0 0 0 / .4), 0 12px 32px -18px rgb(0 0 0 / .7);
+    --lift: var(--edge), 0 2px 4px rgb(0 0 0 / .45), 0 18px 36px -16px rgb(0 0 0 / .8);
+    --chip-lift: 0 0 0 2px var(--surface), 0 3px 8px -1px rgb(0 0 0 / .7);
+    --fade: linear-gradient(90deg, color-mix(in srgb, var(--accent) 72%, #fff) 0%, var(--accent) 50%, color-mix(in srgb, var(--accent) 70%, #000) 100%);
+    --fade-v: linear-gradient(180deg, color-mix(in srgb, var(--accent) 72%, #fff) 0%, var(--accent) 50%, color-mix(in srgb, var(--accent) 70%, #000) 100%);
+    --num: var(--accent);
+    --track: rgb(255 255 255 / .08);
+    --rule: rgb(255 255 255 / .14);
+    --inset: rgb(255 255 255 / .08);
+    --logo-light: none; --logo-dark: block;
+  }
+}
+/* ramp steps, worked out on every element from the --ramp it inherits or sets */
+* {
+  --r1: color-mix(in srgb, var(--ramp) 14%, var(--surface));
+  --r2: color-mix(in srgb, var(--ramp) 30%, var(--surface));
+  --r3: color-mix(in srgb, var(--ramp) 52%, var(--surface));
+  --r4: color-mix(in srgb, var(--ramp) 76%, var(--surface));
+  --r5: var(--ramp);
+  --c1: color-mix(in srgb, var(--ramp) 3%, var(--surface));
+  --c2: color-mix(in srgb, var(--ramp) 6%, var(--surface));
+  --c3: color-mix(in srgb, var(--ramp) 9%, var(--surface));
+  --c4: color-mix(in srgb, var(--ramp) 13%, var(--surface));
+  --c5: color-mix(in srgb, var(--ramp) 18%, var(--surface));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) * {
+    --r1: color-mix(in srgb, var(--ramp) 22%, var(--surface));
+    --r2: color-mix(in srgb, var(--ramp) 38%, var(--surface));
+    --r3: color-mix(in srgb, var(--ramp) 56%, var(--surface));
+    --r4: color-mix(in srgb, var(--ramp) 78%, var(--surface));
+    --c1: color-mix(in srgb, var(--ramp) 6%, var(--surface));
+    --c2: color-mix(in srgb, var(--ramp) 11%, var(--surface));
+    --c3: color-mix(in srgb, var(--ramp) 16%, var(--surface));
+    --c4: color-mix(in srgb, var(--ramp) 22%, var(--surface));
+    --c5: color-mix(in srgb, var(--ramp) 30%, var(--surface));
+  }
+}
+
+* { box-sizing: border-box; }
+html { font-size: 16px; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 .95rem/1.55 var(--font); -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration-color: var(--hair); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* 1. header: one row. Logo with the board name under it; text tabs: groups, a hairline, the open group's pages */
+.top { position: sticky; top: 0; z-index: 5; background: var(--paper); border-bottom: 1px solid var(--hair); }
+.top-row { display: grid; grid-template-columns: auto 1fr; column-gap: 24px; align-items: stretch; max-width: 1440px; margin: 0 auto; padding: 0 32px; min-height: 63px; }
+.brand { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 10px 0; text-decoration: none; color: var(--ink); }
+.brand { align-items: flex-start; }
+.brand img, .brand svg { height: 22px; width: auto; display: block; }
+.brand .on-light { display: var(--logo-light); } .brand .on-dark { display: var(--logo-dark); }
+.brand .word { font-size: 1.05rem; font-weight: 700; letter-spacing: -.01em; line-height: 22px; }
+.brand .board { font-size: .74rem; font-weight: 600; color: var(--ink-2); line-height: 1.25; white-space: nowrap; }
+.tabs { justify-self: end; display: flex; align-items: stretch; }
+.tabs a, .tabs span.off { position: relative; display: flex; align-items: center; padding: 0 12px; font-size: .86rem; font-weight: 500; letter-spacing: .01em; color: var(--muted); text-decoration: none; white-space: nowrap; }
+.tabs a.pg, .tabs span.off.pg { padding: 0 9px; }
+.tabs a:hover { color: var(--ink); }
+.tabs a.on { color: var(--ink); font-weight: 600; }
+.tabs a.on::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 2px; background: var(--fade); }
+.tabs a.pg.on::after { left: 9px; right: 9px; }
+.tabs .off { color: var(--faint); cursor: default; }
+.tabs .pages { display: flex; align-items: stretch; }
+.tabs .sep { align-self: stretch; width: 1px; height: auto; margin: 14px 12px; background: var(--line); }
+/* Two levels, told apart without a box: groups a step larger and darker, pages a step smaller */
+.tabs a:not(.pg) { font-size: .9rem; color: var(--ink-2); }
+.tabs a.pg, .tabs span.off.pg { font-size: .8rem; }
+.tabs a.on { color: var(--ink); }
+
+/* 2. page frame and left column: the open page's name, its sections aligned under it */
+main.paged { display: grid; grid-template-columns: 216px minmax(0, 1fr); column-gap: 40px; max-width: 1440px; margin: 0 auto; padding: 22px 32px 72px; }
+.toc { position: sticky; top: 86px; align-self: start; max-height: calc(100vh - 106px); overflow-y: auto; padding-top: 4px; font-size: .78rem; line-height: 1.3; }
+.toc-name { margin: 0 0 8px; font-size: .86rem; font-weight: 600; color: var(--ink); }
+.toc ol { list-style: none; margin: 0; padding: 0; }
+.toc a { display: flex; gap: 8px; padding: 4px 0; color: var(--ink-2); text-decoration: none; }
+.toc a:hover span { color: var(--ink); text-decoration: underline; text-decoration-color: var(--hair); }
+.toc b { flex: none; min-width: 2.3em; font-weight: 700; color: var(--num); font-variant-numeric: tabular-nums; }
+
+/* 3. page head: eyebrow, title with the fade on the subject word, one points line */
+.head { margin: 0 0 4px; }
+.eyebrow { display: flex; align-items: center; gap: 8px; font-size: .66rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-2); }
+.eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: none; }
+h1.title { margin: 8px 0 4px; max-width: 80ch; font-size: 1.35rem; font-weight: 700; line-height: 1.22; letter-spacing: -.018em; text-wrap: balance; }
+h1.title .em { background: var(--fade); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.points { margin: 0 0 6px; font-size: .9rem; line-height: 1.45; color: var(--muted); white-space: nowrap; overflow: hidden; }
+.points span + span::before { content: ""; display: inline-block; width: 6px; height: 6px; margin: 0 10px; border-radius: 50%; background: var(--fade); vertical-align: 2px; }
+
+/* 4. section divider: a hairline, the solid accent number, the plain heading */
+.sec { padding: 22px 0 8px; }
+.sec:first-of-type { padding-top: 14px; }
+.sec-head { display: flex; align-items: baseline; gap: 14px; margin: 0 0 14px; padding-top: 16px; border-top: 1px solid var(--hair); }
+.sec-no { flex: none; font-size: .68rem; font-weight: 700; letter-spacing: .14em; color: var(--num); font-variant-numeric: tabular-nums; }
+.sec-title { margin: 0; font-size: 1.02rem; font-weight: 600; line-height: 1.3; letter-spacing: -.005em; }
+.sec-aside { margin-left: auto; font-size: .74rem; color: var(--muted); text-align: right; }
+.sec-lead { margin: 0 0 14px; max-width: 110ch; font-size: .9rem; color: var(--ink-2); }
+
+/* 5. lifted tile; an exhibit tile carries a 5px fade bar on top */
+.tile, .fig, .side, .card, .table, .decide { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); }
+.tile, .side, .card { padding: 16px 18px; }
+a.tile:hover, a.card:hover { box-shadow: var(--lift); transform: translateY(-1px); }
+.fig { position: relative; padding: 22px 20px 16px; }
+.fig::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px; border-radius: var(--radius) var(--radius) 0 0; background: var(--fade); }
+.fig-title { margin: 0 0 2px; font-size: .9rem; font-weight: 600; }
+.fig-sub { margin: 0 0 14px; font-size: .76rem; color: var(--muted); }
+.split { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+
+/* 6. raster: cells tinted by the ramp, chips of one width filled in the ramp, a key line */
+.raster-y { margin: 0 0 6px; font-size: .7rem; color: var(--muted); }
+.raster-y b, .raster-axes b { font-weight: 600; color: var(--ink-2); }
+.raster { display: grid; grid-template-columns: 22px repeat(5, minmax(0, 1fr)); gap: 4px; font-size: .72rem; }
+.raster .y, .raster .x { display: grid; place-items: center; color: var(--muted); font-variant-numeric: tabular-nums; }
+.raster .cell { min-height: 62px; padding: 6px; border-radius: var(--radius-s); display: flex; flex-wrap: wrap; align-content: flex-start; gap: 4px; background: color-mix(in srgb, var(--ramp) 1%, var(--sunk)); }
+.raster .c1 { background: var(--c1); } .raster .c2 { background: var(--c2); } .raster .c3 { background: var(--c3); }
+.raster .c4 { background: var(--c4); } .raster .c5 { background: var(--c5); }
+.raster-axes { display: flex; justify-content: space-between; margin: 4px 0 0 26px; font-size: .7rem; color: var(--muted); }
+.n { display: inline-grid; place-items: center; width: 28px; height: 22px; border-radius: 6px; font-size: .7rem; font-weight: 700; line-height: 22px; font-variant-numeric: tabular-nums; color: var(--ink); background: var(--r1); cursor: help; }
+.n.r1 { background: var(--r1); } .n.r2 { background: var(--r2); } .n.r3 { background: var(--r3); }
+.n.r4 { background: var(--r4); color: #fff; } .n.r5 { background: var(--r5); color: #fff; }
+.n.hi { box-shadow: var(--chip-lift); transform: translateY(-1px); margin: 0 2px; }
+.n.nm { width: auto; height: auto; min-height: 22px; padding: 3px 8px; font-weight: 600; font-size: .68rem; line-height: 1.25; text-align: left; place-items: center start; }
+.key { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin-top: 12px; font-size: .72rem; color: var(--muted); }
+.key > span { display: inline-flex; align-items: center; gap: 8px; }
+.key .steps { display: inline-flex; gap: 2px; }
+.key .steps i { width: 16px; height: 10px; border-radius: 2px; }
+.key .n { width: 26px; height: 18px; font-size: .62rem; line-height: 18px; }
+.n-tip { position: fixed; z-index: 50; max-width: 320px; padding: 6px 10px; border-radius: 8px; background: var(--ink); color: var(--paper); font-size: .75rem; pointer-events: none; box-shadow: var(--shadow); }
+
+/* 7. highlight tile: a 2px fade border, the shadow, a filled fade chip; one per screen */
+.rec { border: 2px solid transparent; background: linear-gradient(var(--surface), var(--surface)) padding-box, var(--fade) border-box; }
+.chip.fade { display: inline-flex; margin: 0 0 10px; padding: 3px 10px; border-radius: 999px; background: var(--fade); color: #fff; font-size: .62rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+
+/* 8. side list: one line per item */
+.side h4 { margin: 0 0 8px; font-size: .62rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.lines { list-style: none; margin: 0; padding: 0; }
+.lines li { display: flex; align-items: center; gap: 10px; min-height: 34px; border-top: 1px solid var(--hair); font-size: .84rem; white-space: nowrap; overflow: hidden; }
+.lines li:first-child, .lines .grp + li { border-top: 0; }
+.lines .no { min-width: 2.4em; font-weight: 700; font-variant-numeric: tabular-nums; }
+.lines b { font-weight: 600; }
+.lines em { margin-left: auto; font-style: normal; font-size: .76rem; color: var(--muted); }
+.lines .grp { min-height: 26px; padding-top: 8px; font-size: .6rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.side-note { margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--hair); font-size: .76rem; line-height: 1.45; color: var(--muted); }
+
+/* 9. group cards: name, a count in the solid accent, a quiet grey tag, one sentence */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.card-head { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 8px; }
+.card-head b { font-size: .92rem; font-weight: 700; line-height: 1.3; }
+.count { margin-left: auto; font-size: 1.3rem; font-weight: 700; line-height: 1; letter-spacing: -.03em; color: var(--num); font-variant-numeric: tabular-nums; }
+.card p { margin: 0; font-size: .82rem; line-height: 1.5; color: var(--ink-2); }
+.tag { display: inline-block; margin-right: 6px; padding: 1px 6px; border-radius: 999px; background: var(--sunk); color: var(--muted); font-size: .6rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; vertical-align: 1px; }
+.face { display: inline-grid; place-items: center; flex: none; min-width: 30px; height: 22px; padding: 0 6px; border-radius: 6px; background: var(--sunk); box-shadow: inset 0 0 0 1px var(--inset); font-size: .66rem; font-weight: 700; letter-spacing: .02em; color: var(--ink-2); }
+.face.mark { min-width: 22px; padding: 0; background: none; box-shadow: none; }
+.face.mark svg, .face.mark img { width: 14px; height: 14px; fill: var(--accent); }
+
+/* 10. table, on a lifted tile; one coloured column */
+.table { padding: 4px 8px; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+th, td { padding: 11px 16px 11px 0; border-bottom: 1px solid var(--hair); text-align: left; vertical-align: top; }
+th { padding-top: 6px; padding-bottom: 9px; border-bottom-color: var(--line); font-size: .64rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+td.name b { display: block; font-weight: 600; }
+td.name small { display: block; font-size: .78rem; color: var(--muted); }
+td.c, th.c { text-align: center; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; font-size: .72rem; font-weight: 600; white-space: nowrap; background: var(--sunk); color: var(--ink-2); }
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.chip.warn { background: var(--warn-bg); color: var(--warn); }
+.chip.bad { background: var(--bad-bg); color: var(--bad); }
+.chip.run { background: var(--run-bg); color: var(--run); }
+.chip.done { background: var(--done-bg); color: var(--done); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .chip.you { color: #141416; } :root:not([data-theme="light"]) .chip.you::before { background: #141416; } }
+:root[data-theme="dark"] .chip.you { color: #141416; }
+:root[data-theme="dark"] .chip.you::before { background: #141416; }
+.chip.bad::before { content: "\00d7"; font-weight: 700; }
+.chip.you { background: var(--accent); color: #fff; }
+.chip.you::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #fff; }
+
+/* 11. empty state: one box per run of missing parts */
+.empty { display: flex; gap: 12px; align-items: baseline; max-width: 90ch; margin: 12px 0 0; padding: 2px 0 2px 12px; border-left: 2px dashed var(--faint); color: var(--muted); font-size: .86rem; }
+.empty-label { flex: none; font-size: .6rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+
+/* decision: a 5px fade spine on the left */
+.decide { position: relative; margin-top: 14px; padding: 14px 18px 14px 28px; }
+.decide::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; border-radius: var(--radius) 0 0 var(--radius); background: var(--fade-v); }
+.decide .k { margin: 0 0 4px; font-size: .62rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.decide p { margin: 0; font-size: .9rem; }
+
+/* filter: a grey track, the chosen segment white and lifted */
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 999px; background: var(--track); }
+.pill { display: inline-flex; align-items: center; gap: 7px; min-height: 32px; padding: 0 14px; border: 0; border-radius: 999px; background: none; font: inherit; font-size: .8rem; font-weight: 500; color: var(--ink-2); cursor: pointer; }
+.pill.on { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: var(--shadow); }
+.pill.on::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+footer.foot { max-width: 1440px; margin: 0 auto; padding: 18px 32px 28px; border-top: 1px solid var(--hair); font-size: .74rem; color: var(--muted); }
+
+@media (max-width: 900px) {
+  main.paged { grid-template-columns: 1fr; }
+  .toc { position: static; max-height: none; margin-bottom: 12px; }
+  .split { grid-template-columns: 1fr; }
+  .top-row { grid-template-columns: 1fr; }
+  .tabs { justify-self: start; flex-wrap: wrap; }
+}
+@media print {
+  .top { position: static; }
+  .toc { display: none; }
+  main.paged { grid-template-columns: 1fr; }
+}
+.decide .k .face.mark { vertical-align: -3px; margin-right: 4px; }
+/* theme toggle: the dark tokens above, for <html data-theme="dark">; written by starter.py */
+:root[data-theme="dark"] {
+  --paper: #0E0E10;
+  --surface: #18181B;
+  --ink: #FDFDFB;
+  --ink-2: #D6D6D1;
+  --muted: #A3A39D;
+  --faint: #6F6F6B;
+  --line: #54545A;
+  --hair: #3A3A40;
+  --sunk: #232327;
+  --accent: #5FBFA6;
+  --warn: #FDD663; --warn-bg: #3A2C08;
+  --done: #5CC98F; --done-bg: #123224;
+  --bad: #F28B82;  --bad-bg: #3B1513;
+  --run: #7DB3EE;  --run-bg: #16263A;
+  --edge: inset 0 1px 0 rgb(255 255 255 / .04), inset 0 0 0 1px rgb(255 255 255 / .08);
+  --shadow: var(--edge), 0 1px 2px rgb(0 0 0 / .4), 0 12px 32px -18px rgb(0 0 0 / .7);
+  --lift: var(--edge), 0 2px 4px rgb(0 0 0 / .45), 0 18px 36px -16px rgb(0 0 0 / .8);
+  --chip-lift: 0 0 0 2px var(--surface), 0 3px 8px -1px rgb(0 0 0 / .7);
+  --fade: linear-gradient(90deg, color-mix(in srgb, var(--accent) 72%, #fff) 0%, var(--accent) 50%, color-mix(in srgb, var(--accent) 70%, #000) 100%);
+  --fade-v: linear-gradient(180deg, color-mix(in srgb, var(--accent) 72%, #fff) 0%, var(--accent) 50%, color-mix(in srgb, var(--accent) 70%, #000) 100%);
+  --num: var(--accent);
+  --track: rgb(255 255 255 / .08);
+  --rule: rgb(255 255 255 / .14);
+  --inset: rgb(255 255 255 / .08);
+  --logo-light: none; --logo-dark: block;
+}
+:root[data-theme="dark"] * {
+  --r1: color-mix(in srgb, var(--ramp) 22%, var(--surface));
+  --r2: color-mix(in srgb, var(--ramp) 38%, var(--surface));
+  --r3: color-mix(in srgb, var(--ramp) 56%, var(--surface));
+  --r4: color-mix(in srgb, var(--ramp) 78%, var(--surface));
+  --c1: color-mix(in srgb, var(--ramp) 6%, var(--surface));
+  --c2: color-mix(in srgb, var(--ramp) 11%, var(--surface));
+  --c3: color-mix(in srgb, var(--ramp) 16%, var(--surface));
+  --c4: color-mix(in srgb, var(--ramp) 22%, var(--surface));
+  --c5: color-mix(in srgb, var(--ramp) 30%, var(--surface));
+}
+/* end theme toggle */
