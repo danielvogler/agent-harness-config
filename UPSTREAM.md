@@ -517,6 +517,101 @@ hand-authored skill in `ai-skills-library` (hence the 80-vs-81 gap in the lockfi
 had to be re-applied after re-vendoring. **Fix it upstream in `ai-skills-library` and drop this
 patch on the next sync.**
 
+## Langfuse, run locally
+
+`make langfuse-install` runs [Langfuse](https://github.com/langfuse/langfuse) on a person's
+machine, and `make langfuse-plugin` installs Langfuse's
+[Claude Code plugin](https://github.com/langfuse/Claude-Observability-Plugin), which sends
+every session to it. Two more upstreams, pinned in the `langfuse` block of `upstream.json`
+and nowhere else (`tests/test_langfuse.py` checks). Neither is vendored. Optional, and not
+part of `make install` or `make update`.
+
+| | Pin | Checked against |
+| --- | --- | --- |
+| Langfuse | a release tag and the commit it pointed at | `docker-compose.yml` at that tag |
+| Plugin | a release tag and the commit it pointed at | `hooks/langfuse_hook.py`, `hooks/hooks.json` and `.claude-plugin/plugin.json` at that tag |
+
+A tag can be moved onto other code, so the install compares the checkout with the commit
+and stops when they differ. Claude Code can pin a marketplace only to a ref, not a commit
+(`owner/repo#tag`), so for the plugin the commit is a record, not a check.
+
+### What the install changes against Langfuse's own instructions
+
+Langfuse documents `git clone` and `docker compose up`. As of v4.83.0 that gives:
+
+| Langfuse's default | Here | Why |
+| --- | --- | --- |
+| the clone is `main`, the images float on the tag `4` (`LANGFUSE_IMAGE_TAG:-4`) | the pinned tag for the clone, `LANGFUSE_IMAGE_TAG` set to the same version | Releases come several times a week. An install on the floating tag was found running 4.68.0 when the newest release was 4.83.0, whose compose file has a seventh container. |
+| `TELEMETRY_ENABLED:-true` | `TELEMETRY_ENABLED=false` | Usage statistics go to Langfuse otherwise. |
+| `langfuse-web` (3000), `minio` (9090) and `langfuse-ai-gateway` (3031) published on every interface | bound to `127.0.0.1` by `langfuse/docker-compose.override.yml` | Colima forwards a port the way it is bound in the VM: `*:3000` for these three, `127.0.0.1:3030` for the worker (seen with Colima 0.10.3). On every interface, anyone on the same network reads the traces. |
+| every password is the value written in the compose file | generated per machine into `.env`, mode 600 | The defaults are public. |
+
+The override needs `!override`: Compose merges `ports` by appending, so a plain entry would
+publish the open port and the local one. Before starting, the install reads the merged
+configuration back (`docker compose config --format json`) and refuses any published port
+that is not on the local machine, whichever service it belongs to. A release that adds an
+open port therefore fails the install instead of going unnoticed.
+
+Carried as they are:
+
+- **`minio` has no image tag** (`cgr.dev/chainguard/minio`), and `postgres:17` and `redis:7`
+  float within their major version. Only ClickHouse and the three Langfuse images are
+  exact. The pin does not cover them.
+- **`langfuse-ai-gateway` runs unconfigured.** Without `LANGFUSE_AI_GATEWAY_SERVICE_KEY` it
+  starts and answers inference with 503. It is in the compose file, so it runs; nothing here
+  uses it.
+- **Passwords are generated once.** The databases keep the ones they were created with, so
+  the install never replaces a value in an existing `.env`, and refuses to write a new one
+  when the volumes exist. `make langfuse-reset` is the only way to new passwords.
+- **Size.** Langfuse recommends 4 cores and 16 GiB for a server. Six containers of 4.68 ran
+  in a Colima VM with 4 CPUs and 8 GiB; the install warns below that. Not measured for the
+  seven containers of the pinned release.
+- **The first account is made by hand** in the web UI, and so are the API keys. Langfuse
+  can create them from `LANGFUSE_INIT_*` variables; not used, because the keys would then
+  sit in `.env` as well as in the Keychain.
+
+### The plugin
+
+| id | shape | what it reaches | credentials | blast radius |
+| --- | --- | --- | --- | --- |
+| `langfuse-observability@langfuse-observability` | Claude Code plugin: one Python hook on `Stop` and `SessionEnd`, run with `uv run --script` | the session's transcript in `~/.claude/projects`, in full, and whatever `LANGFUSE_BASE_URL` names: here `http://localhost:3000` | `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` of a project in the local Langfuse, read from the Keychain into the shell | The hook runs after every turn with your rights, outside the sandbox in plain `claude`. It sends every prompt, answer, tool call and tool result, so the content of every file the agent read, secrets included, ends up in the local Langfuse. Whoever holds the secret key and can reach port 3000 reads all of it; with the ports on `127.0.0.1` that is every program on your machine. |
+
+What the setup relies on, as of v1.2.2:
+
+- **A plain environment variable wins over the plugin's own setting**, and the unprefixed
+  name wins over the `CC_` one (`_core_opt` in the hook). The plugin keeps a secret key set
+  through `/plugin configure` in the Keychain, which claude-sb closes; the hook then finds
+  no key and skips the turn. Hence the keys are exported from `~/.zprofile`. A project that
+  exports its own `LANGFUSE_*` variables takes precedence the same way: the transcript then
+  goes to that project's Langfuse.
+- **Set all three in one place.** Keys from the shell with a host from `/plugin configure`
+  (or the reverse) make the hook log "mixed-source"; a key sent to the wrong host is refused
+  and the turn is dropped.
+- **The host defaults to `https://cloud.langfuse.com`.** Without `LANGFUSE_BASE_URL` the
+  transcript is sent to Langfuse's cloud, where the local keys are refused.
+- **State, lock and log go to `~/.claude/state`**, which neither sandbox profile lets a
+  session write. `CC_LANGFUSE_STATE_DIR` moves them; it must be an absolute path the hook
+  can create and write, or the hook falls back to the default. `~/.claude/cache/langfuse`
+  is writable in both profiles.
+- **The hook installs `langfuse>=4.7,<5` from PyPI on its first run**, through uv's inline
+  script metadata. That range is not pinned by us and not by a lock file.
+- **It never blocks a session.** The hook returns 0 on every path, and sending is cut off
+  after five seconds.
+- **No automatic updates.** Auto-update is off for a third-party marketplace unless someone
+  turns it on, and `claude plugin marketplace update` follows the pinned tag, not the
+  default branch.
+- **v1.2.2 is a tag without a GitHub release**; the newest release is v1.2.1. The tag was
+  the tip of `main` when pinned, and `plugin.json` there says 1.2.2.
+
+In claude-sb: supervised traces (network open, `~/.cache` and `~/.claude/cache` writable).
+strict does not, since it refuses loopback addresses and a personal policy cannot remove
+that entry. Neither was run with the plugin when this was written; see `langfuse/README.md`.
+
+To bump either: change the tag and the commit in `upstream.json`, read the release notes
+and the compose file or hook for the points above, run `make langfuse-install` or
+`make langfuse-plugin`, then `make langfuse-status` and one traced session. Langfuse
+migrates its databases when a newer version starts, so a pin never moves back.
+
 ## Not adopted
 
 - **`security` module** — mostly domain-specific (`defi-amm-security`, `hipaa-compliance`,

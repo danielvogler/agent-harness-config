@@ -10,6 +10,26 @@
     "pinnedCommitDate": "2026-09-12",
     "license": "MIT"
   },
+  "langfuse": {
+    "$comment": "The local Langfuse of `make langfuse-install` and its Claude Code plugin. Neither is vendored: the server is cloned and its images pulled at install time, the plugin is installed by Claude Code. Each sha is the commit its tag pointed at when pinned; the install refuses a tag that has moved. See UPSTREAM.md, 'Langfuse, run locally'.",
+    "server": {
+      "repo": "https://github.com/langfuse/langfuse.git",
+      "tag": "v4.83.0",
+      "sha": "fe82bdc24d3bbaac919b20d8fe8708920a9a81a8",
+      "pinnedOn": "2026-11-20",
+      "license": "MIT, except the ee folders"
+    },
+    "plugin": {
+      "repo": "https://github.com/langfuse/Claude-Observability-Plugin.git",
+      "source": "langfuse/Claude-Observability-Plugin",
+      "marketplace": "langfuse-observability",
+      "name": "langfuse-observability",
+      "tag": "v1.2.2",
+      "sha": "b1619f994240ad49de4a97caa01d7d7853944fc0",
+      "pinnedOn": "2026-11-20",
+      "license": "MIT"
+    }
+  },
   "sources": {
     "$comment": "Where custom/ content came from. Recorded so a later move to a shared org is a one-line edit here, not a hunt through the repo.",
     "custom-skills": {

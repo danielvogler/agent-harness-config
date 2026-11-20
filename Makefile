@@ -6,8 +6,12 @@ ECC     := .ecc
 # `make install-project` and the note in README.md.
 TARGETS ?= claude codex opencode
 
+# A local Langfuse (langfuse/) is cloned outside this repo, to LANGFUSE_HOME (default
+# ~/opt/langfuse). The versions are pinned once, in upstream.json.
+LANGFUSE := python3 tools/langfuse-local.py
+
 .DEFAULT_GOAL := help
-.PHONY: help setup opencode-payload install install-project reinstall plan doctor context check test conventions setup-user mcp bump uninstall update validate audit clean
+.PHONY: help setup opencode-payload install install-project reinstall plan doctor context check test conventions setup-user mcp bump uninstall update validate audit clean langfuse-install langfuse-up langfuse-down langfuse-status langfuse-plugin langfuse-reset
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -152,6 +156,7 @@ update: ## Pull the latest shared config and reinstall
 		echo "==> $$t"; $(ECC)/install.sh --profile $(PROFILE) --enable-hooks --target $$t || exit 1; \
 	done
 	@python3 tools/setup-user.py --restore
+	@$(LANGFUSE) drift --notice
 
 
 validate: ## Check the pin, the overlay and custom/ are consistent
@@ -162,3 +167,27 @@ audit: ## Scan the installed config with AgentShield (separate tool, runs locall
 
 clean: ## Remove the materialized upstream checkout
 	rm -rf $(ECC)
+# Not part of `make install` or `make update`: it needs a Docker engine with about 8 GiB,
+# downloads about 6 GB of images and keeps full transcripts of your sessions. Run it in a
+# normal terminal. Safe to run again; it changes only what differs. A changed override
+# and a move of an existing install to the pinned release are shown and must be confirmed
+# (YES=1 skips the questions).
+langfuse-install: ## Install a local Langfuse: the pinned release, .env with generated passwords, ports on 127.0.0.1
+	@$(LANGFUSE) install $(if $(filter 1,$(YES)),--yes,)
+
+langfuse-up: ## Start the installed Langfuse
+	@$(LANGFUSE) up
+
+langfuse-down: ## Stop Langfuse; the traces stay
+	@$(LANGFUSE) down
+
+langfuse-status: ## Langfuse: are the seven containers up, the ports local only, the version the pinned one?
+	@$(LANGFUSE) status
+
+# Writes your own Claude config, like `make mcp`. Undo: claude plugin uninstall.
+langfuse-plugin: ## Install the Claude Code plugin that sends your sessions to the local Langfuse, pinned
+	@$(LANGFUSE) plugin
+
+# The only destructive Langfuse target. It lists what goes and asks; there is no YES=1.
+langfuse-reset: ## DELETE every trace, the Langfuse account and its passwords (asks first)
+	@$(LANGFUSE) reset
