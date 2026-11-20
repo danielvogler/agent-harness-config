@@ -1,0 +1,20 @@
+# Copied beside Langfuse's own docker-compose.yml by `make langfuse-install`.
+#
+# Langfuse publishes its web UI, MinIO and the AI gateway on every network
+# interface; the other services are already bound to 127.0.0.1. On a laptop
+# that puts the traces on whatever network it joins. Bind those three to the
+# local machine as well.
+#
+# !override replaces the list. Without it Compose appends, and the service
+# would publish both the open port and the local one.
+services:
+  langfuse-web:
+    ports: !override
+      - 127.0.0.1:3000:3000
+  minio:
+    ports: !override
+      - 127.0.0.1:9090:9000
+      - 127.0.0.1:9091:9001
+  langfuse-ai-gateway:
+    ports: !override
+      - 127.0.0.1:${LANGFUSE_AI_GATEWAY_PORT:-3031}:${LANGFUSE_AI_GATEWAY_PORT:-3031}

@@ -13,6 +13,10 @@ repos:
     hooks:
       - id: check-json
       - id: check-yaml
+        # Compose's `!override` tag is not standard YAML, so this hook cannot load the
+        # file. `make langfuse-install` has Compose itself read it before anything
+        # starts, and tests/test_langfuse.py checks what it binds.
+        exclude: '^langfuse/docker-compose\.override\.yml$'
       - id: check-merge-conflict
       - id: detect-private-key
       - id: end-of-file-fixer

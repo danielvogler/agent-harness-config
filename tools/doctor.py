@@ -86,6 +86,11 @@ STALE_CODES = ("missing-managed-files", "drifted-managed-files", "missing-source
 
 PROFILE = "custom"
 
+# A local Langfuse is opt-in, for people who work with agents: one that is not
+# installed is not reported. Set to True when the group decides every member runs it,
+# and doctor tells whoever lacks it to install it.
+LANGFUSE_FOR_EVERYONE = False
+
 OK, WARN, ERR = "ok", "warning", "error"
 LABEL = {OK: "  ok  ", WARN: " warn ", ERR: " fail "}
 
@@ -635,6 +640,40 @@ def check_files(report: dict | None, states: list[tuple[Path, dict]] = ()) -> No
             report_issue(adapter, issue, target, ctx, destinations)
 
 
+def langfuse_drift() -> list[list[str]] | None:
+    """What tools/langfuse-local.py finds wrong with an installed Langfuse. None if it cannot say.
+
+    Read from files only, so it works with Docker stopped. An empty list means Langfuse
+    is not installed.
+    """
+    try:
+        out = subprocess.run(
+            [sys.executable, str(REPO / "tools" / "langfuse-local.py"), "drift", "--json"],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        return json.loads(out.stdout) if out.returncode == 0 else None
+    except (OSError, subprocess.SubprocessError, json.JSONDecodeError):
+        return None
+
+
+def check_langfuse() -> None:
+    """Relay the drift of a local Langfuse from the pin. Not installed is fine while it is opt-in."""
+    drift = langfuse_drift()
+    if drift is None:
+        note(WARN, "langfuse: could not compare the install with the pin")
+    elif drift:
+        for status, headline, advice in drift:
+            note(status, headline, advice)
+    elif LANGFUSE_FOR_EVERYONE:
+        note(
+            WARN,
+            "langfuse: not installed, so your agent sessions are not traced",
+            "run `make langfuse-install` in a normal terminal (langfuse/README.md)",
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--strict", action="store_true", help="exit 1 if anything is actionable")
@@ -668,6 +707,7 @@ def main() -> int:
     check_content(states)
     check_hooks(states)
     check_mcp()
+    check_langfuse()
     check_repo()
     check_files(report, states)
 

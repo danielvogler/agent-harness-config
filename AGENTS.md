@@ -20,10 +20,14 @@ Ask before you run anything:
    yes, they need their Confluence URL and token (and optionally Jira's) first. Ask for
    them; never guess. Tokens go in their shell profile (`~/.bashrc` or `~/.zshrc`), URLs in
    `.env`, copied from `.env.example`, which lists every variable `make mcp` reads.
+3. **Do they want their agent sessions traced in a local Langfuse?** Optional, for people
+   who work with agents. It needs a Docker engine with 8 GiB and keeps full transcripts
+   on their machine; `langfuse/README.md` has the steps that are theirs.
 
 Then run, in order: `make install`, `make setup-user`, `make doctor`, then
 `make install-project PROJECT=<path>` for each Cursor or Antigravity project, then `make mcp`
-if they want the servers. `make doctor` should report nothing to fix.
+if they want the servers, and `make langfuse-install` if they want Langfuse. `make doctor`
+should report nothing to fix.
 
 ## Install and update
 
@@ -65,6 +69,11 @@ make uninstall   # remove everything installed (only files recorded in install-s
 make audit       # scan the installed config with AgentShield
 make validate    # check the pin, the overlay and custom/ are consistent
 make clean       # remove the materialized .ecc/ checkout
+make langfuse-install # install a local Langfuse for traces of your sessions (optional, needs Docker)
+make langfuse-up      # start it; langfuse-down stops it and keeps the traces
+make langfuse-status  # seven containers up, ports on 127.0.0.1 only, the pinned version
+make langfuse-plugin  # install the pinned Claude Code plugin that sends sessions to it
+make langfuse-reset   # delete every trace and the passwords (asks first)
 ```
 
 `make install` is reversible: ECC records every file it writes in an install-state file, and
@@ -183,6 +192,7 @@ person has to reverse-engineer.
 | changes how content is authored or which layer to pick | this file |
 | changes the variables `make mcp` reads | `.env.example` |
 | changes what loads when, or where files land | the diagrams and tables in `README.md` |
+| changes `langfuse/` or `tools/langfuse-local.py` | `langfuse/README.md`; a moved pin also `UPSTREAM.md` |
 
 `UPSTREAM.md` is specific to this repo — it exists because we consume a pinned upstream, and
 nothing else we build does. The other three generalise.
@@ -252,6 +262,11 @@ and worth setting a ceiling on.
   `custom/` never fires. Use `always_run: true` and filter inside the script.
 - **Adding a rule costs every person, every session.** Run `make context` before and after.
 - **Cursor and Antigravity are per project.** `make install` alone does not reach them.
+- **`langfuse/` is not part of `make install`.** `make langfuse-install` clones
+  Langfuse outside this repo and starts it with Docker; `make update` only says when the
+  pin moved. Both versions, the server's and the plugin's, are pinned once, in
+  `upstream.json`; `tests/test_langfuse.py` fails if one is written anywhere else. A newer
+  Langfuse migrates its databases on start, so a pin never moves back.
 
 ## Definition of done
 

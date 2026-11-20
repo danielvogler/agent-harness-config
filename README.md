@@ -231,8 +231,11 @@ agent-harness-config/
 │   ├── check-profile.py             ← the custom and lean profiles still resolve after materialize
 │   ├── context-cost.py              ← what the config costs in context per session
 │   ├── doctor.py                    ← is what you have installed still current?
-│   └── repo_conformance.py          ← the repo-conformance hook: .agent/ ledgers, AGENTS.md
+│   ├── repo_conformance.py          ← the repo-conformance hook: .agent/ ledgers, AGENTS.md
+│   └── langfuse-local.py            ← installs, starts and checks the local Langfuse
 ├── .pre-commit-hooks.yaml           ← hooks other repos pin by tag (custom/rules/repo.md)
+├── langfuse/                        ← a local Langfuse for traces of your agent sessions
+│                                      (optional, make langfuse-install; langfuse/README.md)
 ├── Makefile                         ← install / update / doctor / context / check / mcp
 ├── UPSTREAM.md                      ← the pin, every delta, and known issues
 ├── CHANGELOG.md                     ← what changed, in words; tags are made by auto-release
@@ -251,6 +254,26 @@ make install
 
 That is once per person, per machine. Run `make plan` first if you want to see what it will
 write before it writes anything, and `make uninstall` to remove everything it wrote.
+
+### Optional: Langfuse, traces of your agent sessions
+
+[Langfuse](https://langfuse.com) shows what a session did, turn by turn, with tokens, cost
+and duration. It runs on your own machine and nothing leaves it. It is not part of
+`make install` or `make update`: it needs a Docker engine with 4 CPUs and 8 GiB of memory
+(with Colima: `colima start --cpu 4 --memory 8`) and about 6 GB of images.
+
+```bash
+make langfuse-install   # the pinned release in ~/opt/langfuse, generated passwords, ports on 127.0.0.1
+make langfuse-plugin    # the pinned Claude Code plugin that sends your sessions to it
+make langfuse-status    # seven containers up, ports local only, the pinned version
+make langfuse-down      # stop it; langfuse-up starts it again, the traces stay
+```
+
+`make langfuse-install` ends with the steps that are yours: an account in the local web
+UI, two API keys in the Keychain, four lines in `~/.zprofile`. **A trace holds everything
+a session read, secrets in files included.** That, how it behaves in `claude-sb`, and
+`make langfuse-reset`, which deletes everything: [`langfuse/README.md`](langfuse/README.md).
+`make doctor` reports an install that is behind the pin or no longer local-only.
 
 ### Cursor and Antigravity are project-scoped
 

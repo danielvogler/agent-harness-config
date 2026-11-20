@@ -50,6 +50,12 @@ def no_install_plan(doctor, monkeypatch):
     monkeypatch.setattr(doctor, "planned_paths", lambda target: None, raising=False)
 
 
+@pytest.fixture(autouse=True)
+def no_langfuse(doctor, monkeypatch):
+    """langfuse_drift runs the real tool against the real home; tests set a result explicitly."""
+    monkeypatch.setattr(doctor, "langfuse_drift", lambda: [])
+
+
 class TestCheckPin:
     def test_reports_ok_when_installed_commit_matches_pin(self, doctor):
         # Act
@@ -1036,3 +1042,50 @@ class TestMain:
         # Assert
         assert code == 1
         assert "Nothing is installed" in capsys.readouterr().out
+
+
+class TestLangfuse:
+    def test_says_nothing_when_langfuse_is_not_installed(self, doctor):
+        # Opt-in: a machine without it has nothing to fix.
+        doctor.check_langfuse()
+
+        assert doctor.findings == []
+
+    def test_asks_for_the_install_once_every_member_runs_it(self, doctor, monkeypatch):
+        # Arrange
+        monkeypatch.setattr(doctor, "LANGFUSE_FOR_EVERYONE", True)
+
+        # Act
+        doctor.check_langfuse()
+
+        # Assert
+        assert statuses(doctor) == [doctor.WARN]
+        assert "make langfuse-install" in doctor.findings[0][2]
+
+    def test_relays_what_the_tool_finds(self, doctor, monkeypatch):
+        # Arrange
+        drift = [
+            ["error", "langfuse: usage telemetry to Langfuse is on", "run `make langfuse-install`"],
+            ["warning", "langfuse: images are not pinned", "run `make langfuse-install`"],
+        ]
+        monkeypatch.setattr(doctor, "langfuse_drift", lambda: drift)
+
+        # Act
+        doctor.check_langfuse()
+
+        # Assert
+        assert statuses(doctor) == [doctor.ERR, doctor.WARN]
+        assert "telemetry" in headlines(doctor)
+
+    def test_a_tool_that_cannot_answer_is_a_warning(self, doctor, monkeypatch):
+        monkeypatch.setattr(doctor, "langfuse_drift", lambda: None)
+
+        doctor.check_langfuse()
+
+        assert statuses(doctor) == [doctor.WARN]
+
+    def test_the_statuses_are_the_ones_doctor_prints(self, doctor):
+        # The tool's findings are printed with doctor's labels.
+        tool = load_tool("langfuse-local.py")
+
+        assert {tool.OK, tool.WARN, tool.ERR} == set(doctor.LABEL)
